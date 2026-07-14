@@ -1,0 +1,19 @@
+name = "soup-billing"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Referral / sales ledger. Create with:
+#   wrangler kv namespace create SALES
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "SALES"
+id = "REPLACE_WITH_KV_ID"
+
+[vars]
+FROM_EMAIL = "licenses@passsoup.dev"
+REFUND_WINDOW_DAYS = "14"
+COMMISSION_RATE = "0.51"
+
+# Secrets are NOT set here — set them with `wrangler secret put`:
+#   ISSUER_PKCS8_B64  ISSUER_PUBLIC_B64  STRIPE_WEBHOOK_SECRET  RESEND_API_KEY
