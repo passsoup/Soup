@@ -5,43 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your referrals · Soup</title>
 <style>
-  :root { --bg:#faf6f0; --card:#fff; --border:#e8ddcf; --fg:#241a14; --muted:#7b6a5c;
-    --brand:#c0512d; --brand-ink:#9c3f20; --valid:#2f8f5b; --amber:#b06a00;
-    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,ui-serif,serif;
-    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  :root{ --paper:#fff7ea; --paper-2:#ffeecb; --card:#fff; --ink:#2b1a10; --fg:#2b1a10; --muted:#7a6552; --faint:#a08b76;
+    --brand:#ee6a2e; --brand-ink:#d1521a; --sun:#ffcf5c; --mint:#7fd0a1; --valid:#1f9d57; --amber:#b06a00;
+    --shadow:5px 5px 0 var(--ink); --shadow-sm:3px 3px 0 var(--ink);
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
-  @media (prefers-color-scheme: dark){ :root{ --bg:#17110d; --card:#221a14; --border:#33271e;
-    --fg:#f0e7dd; --muted:#b0a093; --brand:#e0784f; --brand-ink:#e0784f; --valid:#4fbd83; --amber:#f0b45e; } }
-  :root[data-theme="light"]{ --bg:#faf6f0; --card:#fff; --border:#e8ddcf; --fg:#241a14; --muted:#7b6a5c; --brand:#c0512d; --brand-ink:#9c3f20; }
-  :root[data-theme="dark"]{ --bg:#17110d; --card:#221a14; --border:#33271e; --fg:#f0e7dd; --muted:#b0a093; --brand:#e0784f; --brand-ink:#e0784f; --valid:#4fbd83; --amber:#f0b45e; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#1c140e; --paper-2:#241a11; --card:#2a1f15; --ink:#0d0906; --fg:#fdf3e6; --muted:#c3ad96;
+    --brand:#ff7f45; --brand-ink:#ff7f45; --sun:#ffcf5c; --mint:#5cc98a; --valid:#5cc98a; --amber:#f0b45e;
+    --shadow:5px 5px 0 #0d0906; --shadow-sm:3px 3px 0 #0d0906; } }
+  :root[data-theme="light"]{ --paper:#fff7ea; --card:#fff; --ink:#2b1a10; --fg:#2b1a10; --muted:#7a6552; --brand:#ee6a2e; --brand-ink:#d1521a; --valid:#1f9d57; --shadow:5px 5px 0 #2b1a10; --shadow-sm:3px 3px 0 #2b1a10; }
+  :root[data-theme="dark"]{ --paper:#1c140e; --card:#2a1f15; --ink:#0d0906; --fg:#fdf3e6; --muted:#c3ad96; --brand:#ff7f45; --brand-ink:#ff7f45; --valid:#5cc98a; --shadow:5px 5px 0 #0d0906; --shadow-sm:3px 3px 0 #0d0906; }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55}
-  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px}
+  :focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:8px}
+  body{margin:0;background:var(--paper);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:30px 20px 80px}
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:20px;color:var(--fg);text-decoration:none}
-  .glyph{width:28px;height:28px;border-radius:7px;background:var(--brand);display:grid;place-items:center}
-  h1{font-family:var(--serif);font-size:26px;margin:18px 0 2px}
-  .sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;color:var(--fg);text-decoration:none}
+  .glyph{width:34px;height:34px;border-radius:10px;background:var(--brand);border:2.5px solid var(--ink);box-shadow:var(--shadow-sm);display:grid;place-items:center}
+  h1{font-size:30px;margin:18px 0 4px;font-weight:900;letter-spacing:-0.02em}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:14px;font-weight:600}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
   @media(max-width:560px){.grid{grid-template-columns:1fr}}
-  .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
-  .stat .n{font-family:var(--serif);font-size:30px;font-variant-numeric:tabular-nums}
-  .stat .l{color:var(--muted);font-size:13px;margin-top:4px}
-  .stat.payable .n{color:var(--valid)}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-  .card h2{font-family:var(--serif);font-size:18px;margin:0 0 10px}
+  .stat{background:var(--card);border:2.5px solid var(--ink);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm)}
+  .stat .n{font-size:32px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+  .stat .l{color:var(--muted);font-size:13px;margin-top:4px;font-weight:600}
+  .stat.payable{background:var(--sun)} .stat.payable .n{color:var(--ink)}
+  .card{background:var(--card);border:2.5px solid var(--ink);border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+  .card h2{font-size:19px;margin:0 0 12px;font-weight:900}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  code{font-family:var(--mono);font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 11px;word-break:break-all;flex:1;min-width:200px;color:var(--brand-ink)}
-  button{font:inherit;font-weight:600;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer}
-  button.ghost{background:transparent;color:var(--fg);border-color:var(--border)}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
-  .pill.on{background:#e3f2e9;color:var(--valid)} .pill.off{background:#fff5e5;color:var(--amber)}
-  @media(prefers-color-scheme:dark){.pill.on{background:#16281f}.pill.off{background:#2a2011}}
-  .note{color:var(--muted);font-size:13px;margin-top:10px}
-  .msg{margin-top:12px;font-size:14px}
-  .themebtn,.langbtn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:600;font-size:13px}
-  a{color:var(--brand-ink)}
+  code{font-family:var(--mono);font-size:13px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:10px 12px;word-break:break-all;flex:1;min-width:200px;color:var(--brand-ink);font-weight:600}
+  button{font:inherit;font-weight:800;border:2.5px solid var(--ink);background:var(--brand);color:#fff;padding:11px 18px;border-radius:14px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .1s ease, box-shadow .1s ease}
+  button:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)} button:active{transform:translate(3px,3px);box-shadow:none}
+  button.ghost{background:var(--card);color:var(--ink)}
+  button:disabled{opacity:.45;cursor:not-allowed;box-shadow:var(--shadow-sm);transform:none}
+  .pill{display:inline-block;font-size:12px;font-weight:900;padding:4px 12px;border-radius:999px;border:2px solid var(--ink)}
+  .pill.on{background:var(--mint);color:var(--ink)} .pill.off{background:var(--sun);color:var(--ink)}
+  .note{color:var(--muted);font-size:13px;margin-top:10px;font-weight:500}
+  .msg{margin-top:12px;font-size:14px;font-weight:700}
+  .themebtn,.langbtn{background:var(--card);border:2.5px solid var(--ink);color:var(--fg);border-radius:12px;padding:7px 11px;cursor:pointer;font-weight:800;font-size:13px;box-shadow:var(--shadow-sm)}
+  .themebtn:hover,.langbtn:hover{transform:translate(-1px,-1px)} .themebtn:active,.langbtn:active{transform:translate(3px,3px);box-shadow:none}
+  a{color:var(--brand-ink);font-weight:700}
 </style>
 </head>
 <body>
