@@ -474,7 +474,8 @@
               <code id="refLink"></code>
               <button class="btn btn-ghost" id="refCopy" data-i18n="ref.copy">Copy</button>
             </div>
-            <p class="ref-note" data-i18n="ref.note">Share this link. When someone buys through it, the sale is tagged to you in Stripe. Live payout dashboard is coming with our billing backend.</p>
+            <p class="ref-note" style="margin-bottom:6px" data-i18n="ref.share">Share this link. Every purchase through it is tagged to you and earns 51%.</p>
+            <p class="ref-note"><a id="refDash" href="#" style="color:var(--brand-ink);font-weight:600" data-i18n="ref.dash">Open your dashboard →</a></p>
           </div>
         </div>
       </div>
@@ -645,7 +646,8 @@
       "ref.gen": { en: "Create my link", ru: "Создать ссылку" },
       "ref.copy": { en: "Copy", ru: "Копировать" },
       "ref.copied": { en: "Copied ✓", ru: "Скопировано ✓" },
-      "ref.note": { en: "Share this link. When someone buys through it, the sale is tagged to you in Stripe. A live payout dashboard is coming with our billing backend.", ru: "Поделитесь ссылкой. Когда по ней покупают, продажа привязывается к вам в Stripe. Личный кабинет с выплатами появится вместе с биллинг-бэкендом." },
+      "ref.share": { en: "Share this link. Every purchase through it is tagged to you and earns 51%.", ru: "Поделитесь ссылкой. Каждая покупка по ней привязана к вам и приносит 51%." },
+      "ref.dash": { en: "Open your dashboard →", ru: "Открыть личный кабинет →" },
       "ref.bademail": { en: "Enter a valid email first.", ru: "Сначала введите корректный email." },
       "ref.s1": { en: "Create your link above.", ru: "Создайте ссылку выше." },
       "ref.s2": { en: "Send it to a company you work with.", ru: "Отправьте её компании, с которой работаете." },
@@ -758,6 +760,7 @@
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert(t("ref.bademail")); return; }
         var link = "https://passsoup.dev/?ref=" + encodeURIComponent(email);
         document.getElementById("refLink").textContent = link;
+        document.getElementById("refDash").href = "me.html?code=" + encodeURIComponent(email);
         document.getElementById("refOut").hidden = false;
       });
       var refCopy = document.getElementById("refCopy");

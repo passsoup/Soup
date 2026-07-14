@@ -12,8 +12,10 @@ id = "REPLACE_WITH_KV_ID"
 
 [vars]
 FROM_EMAIL = "licenses@passsoup.dev"
-REFUND_WINDOW_DAYS = "14"
+REFUND_WINDOW_DAYS = "30"   # payout lock: commission is withdrawable 30 days after payment
 COMMISSION_RATE = "0.51"
+DASHBOARD_BASE = "https://passsoup.dev/me/"
 
 # Secrets are NOT set here — set them with `wrangler secret put`:
 #   ISSUER_PKCS8_B64  ISSUER_PUBLIC_B64  STRIPE_WEBHOOK_SECRET  RESEND_API_KEY
+#   STRIPE_SECRET_KEY  (sk_live_... / sk_test_... — for Stripe Connect payouts)

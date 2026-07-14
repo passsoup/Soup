@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your referrals · Soup</title>
+<style>
+  :root { --bg:#faf6f0; --card:#fff; --border:#e8ddcf; --fg:#241a14; --muted:#7b6a5c;
+    --brand:#c0512d; --brand-ink:#9c3f20; --valid:#2f8f5b; --amber:#b06a00;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,ui-serif,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#17110d; --card:#221a14; --border:#33271e;
+    --fg:#f0e7dd; --muted:#b0a093; --brand:#e0784f; --brand-ink:#e0784f; --valid:#4fbd83; --amber:#f0b45e; } }
+  :root[data-theme="light"]{ --bg:#faf6f0; --card:#fff; --border:#e8ddcf; --fg:#241a14; --muted:#7b6a5c; --brand:#c0512d; --brand-ink:#9c3f20; }
+  :root[data-theme="dark"]{ --bg:#17110d; --card:#221a14; --border:#33271e; --fg:#f0e7dd; --muted:#b0a093; --brand:#e0784f; --brand-ink:#e0784f; --valid:#4fbd83; --amber:#f0b45e; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:20px;color:var(--fg);text-decoration:none}
+  .glyph{width:28px;height:28px;border-radius:7px;background:var(--brand);display:grid;place-items:center}
+  h1{font-family:var(--serif);font-size:26px;margin:18px 0 2px}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
+  .stat .n{font-family:var(--serif);font-size:30px;font-variant-numeric:tabular-nums}
+  .stat .l{color:var(--muted);font-size:13px;margin-top:4px}
+  .stat.payable .n{color:var(--valid)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+  .card h2{font-family:var(--serif);font-size:18px;margin:0 0 10px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  code{font-family:var(--mono);font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 11px;word-break:break-all;flex:1;min-width:200px;color:var(--brand-ink)}
+  button{font:inherit;font-weight:600;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer}
+  button.ghost{background:transparent;color:var(--fg);border-color:var(--border)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+  .pill.on{background:#e3f2e9;color:var(--valid)} .pill.off{background:#fff5e5;color:var(--amber)}
+  @media(prefers-color-scheme:dark){.pill.on{background:#16281f}.pill.off{background:#2a2011}}
+  .note{color:var(--muted);font-size:13px;margin-top:10px}
+  .msg{margin-top:12px;font-size:14px}
+  .themebtn,.langbtn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:600;font-size:13px}
+  a{color:var(--brand-ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="index.html">
+      <span class="glyph"><svg viewBox="0 0 200 200" width="18" height="18"><line x1="55" y1="155" x2="145" y2="45" stroke="#fff" stroke-width="30" stroke-linecap="round"/></svg></span>
+      Soup
+    </a>
+    <div class="row">
+      <button class="langbtn" id="lang">РУ</button>
+      <button class="themebtn" id="theme">◑</button>
+    </div>
+  </header>
+
+  <h1 data-i18n="h1">Your referral dashboard</h1>
+  <p class="sub"><span data-i18n="sub">Everything tagged to</span> <code id="who" style="flex:none;min-width:0">—</code></p>
+
+  <div class="grid">
+    <div class="stat"><div class="n" id="sales">—</div><div class="l" data-i18n="s_sales">Sales</div></div>
+    <div class="stat"><div class="n" id="pending">—</div><div class="l" data-i18n="s_pending">Pending (locked)</div></div>
+    <div class="stat payable"><div class="n" id="payable">—</div><div class="l" data-i18n="s_payable">Payable now</div></div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="c1">Get paid</h2>
+    <p class="note" id="connStatus" data-i18n="conn_unknown">Checking payout status…</p>
+    <div class="row" style="margin-top:8px">
+      <button id="onboard" data-i18n="btn_onboard">Set up payouts (Stripe)</button>
+      <button class="ghost" id="withdraw" data-i18n="btn_withdraw">Withdraw payable</button>
+    </div>
+    <div class="msg" id="msg"></div>
+    <p class="note" data-i18n="lock">Commission unlocks 30 days after each payment (refund window). 51% of every payment, for the life of the subscription.</p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="c2">Your link</h2>
+    <div class="row">
+      <code id="reflink">—</code>
+      <button class="ghost" id="copy" data-i18n="copy">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ── CONFIGURE THIS after you deploy the billing Worker (infra/worker) ──
+  var WORKER = "";  // e.g. "https://soup-billing.yourname.workers.dev"
+  // ───────────────────────────────────────────────────────────────────────
+
+  var T = {
+    h1:{en:"Your referral dashboard",ru:"Кабинет реферала"},
+    sub:{en:"Everything tagged to",ru:"Всё, что привязано к"},
+    s_sales:{en:"Sales",ru:"Продажи"},
+    s_pending:{en:"Pending (locked)",ru:"В ожидании (заморожено)"},
+    s_payable:{en:"Payable now",ru:"К выводу сейчас"},
+    c1:{en:"Get paid",ru:"Получить выплату"},
+    c2:{en:"Your link",ru:"Ваша ссылка"},
+    copy:{en:"Copy",ru:"Копировать"},
+    copied:{en:"Copied ✓",ru:"Скопировано ✓"},
+    btn_onboard:{en:"Set up payouts (Stripe)",ru:"Настроить выплаты (Stripe)"},
+    btn_withdraw:{en:"Withdraw payable",ru:"Вывести доступное"},
+    lock:{en:"Commission unlocks 30 days after each payment (refund window). 51% of every payment, for the life of the subscription.",ru:"Комиссия размораживается через 30 дней после каждой оплаты (окно возврата). 51% с каждого платежа, на весь срок подписки."},
+    conn_unknown:{en:"Checking payout status…",ru:"Проверяем статус выплат…"},
+    conn_on:{en:"Payouts enabled ✓",ru:"Выплаты подключены ✓"},
+    conn_off:{en:"Payouts not set up yet.",ru:"Выплаты ещё не настроены."},
+    not_configured:{en:"The billing service isn't connected yet. Ask the Soup team.",ru:"Биллинг ещё не подключён. Напишите команде Soup."},
+    nothing:{en:"Nothing payable yet.",ru:"Пока нечего выводить."},
+    paid_ok:{en:"Sent to your Stripe account.",ru:"Отправлено на ваш Stripe-аккаунт."},
+    err:{en:"Something went wrong: ",ru:"Что-то пошло не так: "}
+  };
+  var lang=(function(){try{var s=localStorage.getItem("soup-lang");if(s==="en"||s==="ru")return s}catch(e){}return (navigator.language||"en").toLowerCase().indexOf("ru")===0?"ru":"en"})();
+  try{var th=localStorage.getItem("soup-theme");if(th)document.documentElement.setAttribute("data-theme",th)}catch(e){}
+  function t(k){return (T[k]&&(T[k][lang]||T[k].en))||k}
+  function applyLang(){document.documentElement.setAttribute("lang",lang);document.querySelectorAll("[data-i18n]").forEach(function(el){var k=el.getAttribute("data-i18n");if(T[k])el.textContent=t(k)});document.getElementById("lang").textContent=lang==="ru"?"EN":"РУ"}
+  applyLang();
+  document.getElementById("lang").onclick=function(){lang=lang==="ru"?"en":"ru";try{localStorage.setItem("soup-lang",lang)}catch(e){}applyLang();refreshConn()};
+  document.getElementById("theme").onclick=function(){var el=document.documentElement,c=el.getAttribute("data-theme");var d=c?c==="dark":matchMedia("(prefers-color-scheme: dark)").matches;var n=d?"light":"dark";el.setAttribute("data-theme",n);try{localStorage.setItem("soup-theme",n)}catch(e){}};
+
+  var code=new URLSearchParams(location.search).get("code")||"";
+  document.getElementById("who").textContent=code||"—";
+  document.getElementById("reflink").textContent="https://passsoup.dev/?ref="+encodeURIComponent(code);
+  var money=function(cents,cur){return (cents/100).toLocaleString(undefined,{style:"currency",currency:(cur||"usd").toUpperCase()})};
+
+  document.getElementById("copy").onclick=function(){var l=document.getElementById("reflink").textContent;var b=this;var done=function(){b.textContent=t("copied");setTimeout(function(){b.textContent=t("copy")},1500)};if(navigator.clipboard)navigator.clipboard.writeText(l).then(done,done);else done()};
+
+  function api(path,opts){return fetch(WORKER+path,opts).then(function(r){return r.json()})}
+
+  function loadSummary(){
+    if(!WORKER||!code)return;
+    api("/ref/"+encodeURIComponent(code)).then(function(d){
+      document.getElementById("sales").textContent=d.sales!=null?d.sales:"0";
+      document.getElementById("pending").textContent=money(d.commission_pending||0,"usd");
+      document.getElementById("payable").textContent=money(d.commission_payable||0,"usd");
+    }).catch(function(){});
+  }
+  function refreshConn(){
+    var el=document.getElementById("connStatus");
+    if(!WORKER){el.textContent=t("not_configured");return}
+    if(!code)return;
+    api("/connect/status?code="+encodeURIComponent(code)).then(function(d){
+      if(d.payouts_enabled){el.innerHTML='<span class="pill on">'+t("conn_on")+'</span>';document.getElementById("onboard").style.display="none";}
+      else{el.innerHTML='<span class="pill off">'+t("conn_off")+'</span>';document.getElementById("withdraw").disabled=true;}
+    }).catch(function(){el.textContent=t("conn_off")});
+  }
+  document.getElementById("onboard").onclick=function(){
+    if(!WORKER){document.getElementById("msg").textContent=t("not_configured");return}
+    this.disabled=true;
+    api("/connect/onboard",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code})})
+      .then(function(d){if(d.url)location.href=d.url;else document.getElementById("msg").textContent=t("err")+(d.error||"")});
+  };
+  document.getElementById("withdraw").onclick=function(){
+    if(!WORKER)return;var m=document.getElementById("msg");this.disabled=true;
+    api("/payout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code})})
+      .then(function(d){this.disabled=false;if(d.paid>0)m.textContent=t("paid_ok")+" "+money(d.paid,d.currency);else m.textContent=t("nothing");loadSummary();}.bind(this))
+      .catch(function(e){m.textContent=t("err")+e});
+  };
+
+  loadSummary(); refreshConn();
+})();
+</script>
+</body>
+</html>

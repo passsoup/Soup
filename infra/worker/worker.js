@@ -30,10 +30,26 @@ export default {
     if (request.method === "GET" && url.pathname === "/health") {
       return json({ status: "ok" });
     }
-    // Minimal referral read API for the future dashboard (public summary only).
+    // Referral read API for the no-login dashboard (public summary only).
     if (request.method === "GET" && url.pathname.startsWith("/ref/")) {
-      return referralSummary(url.pathname.slice("/ref/".length), env);
+      return withCors(await referralSummary(url.pathname.slice("/ref/".length), env));
     }
+    // Register a referrer (called by the site's "Create my link" button).
+    if (request.method === "POST" && url.pathname === "/ref/register") {
+      return withCors(await registerReferrer(request, env));
+    }
+    // Stripe Connect: start KYC onboarding so the referrer can receive payouts.
+    if (request.method === "POST" && url.pathname === "/connect/onboard") {
+      return withCors(await connectOnboard(request, env));
+    }
+    if (request.method === "GET" && url.pathname === "/connect/status") {
+      return withCors(await connectStatus(url.searchParams.get("code"), env));
+    }
+    // Withdraw: pay the referrer their payable (unlocked) commission.
+    if (request.method === "POST" && url.pathname === "/payout") {
+      return withCors(await payout(request, env));
+    }
+    if (request.method === "OPTIONS") return withCors(new Response(null, { status: 204 }));
     return new Response("Not found", { status: 404 });
   },
 };
@@ -174,6 +190,108 @@ async function referralSummary(code, env) {
     else pending += s.commission;
   }
   return json({ code, sales, commission_pending: pending, commission_payable: payable });
+}
+
+// --------------------------------------------------------------------------- //
+// Referrer registration + Stripe Connect payouts
+// --------------------------------------------------------------------------- //
+async function registerReferrer(request, env) {
+  const { email } = await request.json().catch(() => ({}));
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "bad email" }, 400);
+  const code = email.toLowerCase();
+  const existing = env.SALES && JSON.parse((await env.SALES.get("referrer:" + code)) || "null");
+  if (!existing && env.SALES) {
+    await env.SALES.put("referrer:" + code, JSON.stringify({ email: code, connect_account_id: null }));
+  }
+  return json({
+    code,
+    ref_link: "https://passsoup.dev/?ref=" + encodeURIComponent(code),
+    dashboard: (env.DASHBOARD_BASE || "https://passsoup.dev/me/") + "?code=" + encodeURIComponent(code),
+  });
+}
+
+async function connectOnboard(request, env) {
+  const { code } = await request.json().catch(() => ({}));
+  if (!code) return json({ error: "no code" }, 400);
+  const rkey = "referrer:" + code.toLowerCase();
+  let rec = JSON.parse((await env.SALES.get(rkey)) || "null") || { email: code.toLowerCase(), connect_account_id: null };
+  if (!rec.connect_account_id) {
+    const acct = await stripeApi(env, "POST", "/v1/accounts", {
+      type: "express",
+      email: rec.email,
+      "capabilities[transfers][requested]": "true",
+    });
+    rec.connect_account_id = acct.id;
+    await env.SALES.put(rkey, JSON.stringify(rec));
+  }
+  const base = env.DASHBOARD_BASE || "https://passsoup.dev/me/";
+  const link = await stripeApi(env, "POST", "/v1/account_links", {
+    account: rec.connect_account_id,
+    refresh_url: base + "?code=" + encodeURIComponent(code),
+    return_url: base + "?code=" + encodeURIComponent(code) + "&onboarded=1",
+    type: "account_onboarding",
+  });
+  return json({ url: link.url });
+}
+
+async function connectStatus(code, env) {
+  if (!code) return json({ error: "no code" }, 400);
+  const rec = JSON.parse((await env.SALES.get("referrer:" + code.toLowerCase())) || "null");
+  if (!rec || !rec.connect_account_id) return json({ payouts_enabled: false, onboarded: false });
+  const acct = await stripeApi(env, "GET", "/v1/accounts/" + rec.connect_account_id, null);
+  return json({ payouts_enabled: !!acct.payouts_enabled, onboarded: !!acct.details_submitted });
+}
+
+async function payout(request, env) {
+  const { code } = await request.json().catch(() => ({}));
+  if (!code) return json({ error: "no code" }, 400);
+  const rec = JSON.parse((await env.SALES.get("referrer:" + code.toLowerCase())) || "null");
+  if (!rec || !rec.connect_account_id) return json({ error: "connect a payout account first" }, 400);
+  const acct = await stripeApi(env, "GET", "/v1/accounts/" + rec.connect_account_id, null);
+  if (!acct.payouts_enabled) return json({ error: "payouts not enabled yet — finish Stripe onboarding" }, 400);
+
+  const ids = JSON.parse((await env.SALES.get("ref:" + code.toLowerCase())) || "[]");
+  const now = Date.now();
+  let total = 0, currency = "usd";
+  const toPay = [];
+  for (const id of ids) {
+    const s = JSON.parse((await env.SALES.get("sale:" + id)) || "null");
+    if (!s || s.paid_out || s.refunded) continue;
+    if (Date.parse(s.payout_unlock_at) > now) continue; // still inside refund window
+    total += s.commission; currency = s.currency || currency; toPay.push(s);
+  }
+  if (total <= 0) return json({ paid: 0, message: "nothing payable yet" });
+
+  await stripeApi(env, "POST", "/v1/transfers", {
+    amount: String(total),
+    currency,
+    destination: rec.connect_account_id,
+  });
+  for (const s of toPay) {
+    s.paid_out = true;
+    await env.SALES.put("sale:" + s.session_id, JSON.stringify(s));
+  }
+  return json({ paid: total, currency });
+}
+
+async function stripeApi(env, method, path, params) {
+  const init = { method, headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } };
+  if (params) {
+    init.headers["Content-Type"] = "application/x-www-form-urlencoded";
+    init.body = new URLSearchParams(params).toString();
+  }
+  const res = await fetch("https://api.stripe.com" + path, init);
+  const data = await res.json();
+  if (!res.ok) throw new Error("stripe " + path + ": " + (data.error?.message || res.status));
+  return data;
+}
+
+function withCors(resp) {
+  const r = new Response(resp.body, resp);
+  r.headers.set("Access-Control-Allow-Origin", "*");
+  r.headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  r.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return r;
 }
 
 // --------------------------------------------------------------------------- //
