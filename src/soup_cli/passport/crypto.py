@@ -210,7 +210,7 @@ def sign_passport(
     hash chain is (re)computed, so the signer is itself tamper-evident: you
     cannot swap the claimed signer without breaking the signature.
     """
-    from soup_cli.passport.schema import build_hash_chain
+    from soup_cli.passport.schema import build_hash_chain, meta_of
 
     signer = passport.setdefault("blocks", {}).setdefault("accountability", {}).setdefault(
         "signer", {}
@@ -220,7 +220,7 @@ def sign_passport(
     signer["public_key"] = public_key_b64(private_key)
 
     # Recompute the chain so the just-written signer block is covered by root_hash.
-    passport["hash_chain"] = build_hash_chain(passport["blocks"])
+    passport["hash_chain"] = build_hash_chain(passport["blocks"], meta_of(passport))
     root_hash = passport["hash_chain"]["root_hash"]
     passport["signature"] = sign_root_hash(private_key, root_hash)
     return passport
@@ -239,7 +239,7 @@ def sign_passport_with_signer(
     from a backend (file / HSM), so the private key can live in an HSM and never
     touch this process. Used by ``soup sign --org``.
     """
-    from soup_cli.passport.schema import build_hash_chain
+    from soup_cli.passport.schema import build_hash_chain, meta_of
 
     block_signer = passport.setdefault("blocks", {}).setdefault(
         "accountability", {}
@@ -248,7 +248,7 @@ def sign_passport_with_signer(
     block_signer["label"] = signer_label
     block_signer["public_key"] = signer.public_key_b64()
 
-    passport["hash_chain"] = build_hash_chain(passport["blocks"])
+    passport["hash_chain"] = build_hash_chain(passport["blocks"], meta_of(passport))
     root_hash = passport["hash_chain"]["root_hash"]
     passport["signature"] = signer.sign_root_hash(root_hash)
     return passport

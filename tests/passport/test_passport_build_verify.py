@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from soup_cli.passport import crypto
@@ -89,6 +91,31 @@ def test_tamper_any_block_breaks_verify(tmp_path):
     result = crypto.verify_passport(passport)
     assert not result.valid
     assert any("evaluation" in r for r in result.reasons)
+
+
+@requires_crypto
+def test_tampering_top_level_metadata_breaks_verify(tmp_path):
+    # The model name / provenance / unattested list live OUTSIDE 'blocks' but
+    # MUST still be bound by the signature (via the synthetic __meta__ block).
+    store = _seed_run(tmp_path)
+    passport = build_passport(store, model_name="real-llm", model_version="1.0.0")
+    key = crypto.generate_private_key()
+    crypto.sign_passport(passport, key, signer_type="self")
+    assert crypto.verify_passport(passport).valid
+
+    def _rename(p):
+        p["model"]["name"] = "HACKED"
+
+    def _downgrade(p):
+        p["provenance_class"] = "attested"
+
+    def _clear_unattested(p):
+        p["unattested_fields"] = []
+
+    for mutate in (_rename, _downgrade, _clear_unattested):
+        tampered = json.loads(json.dumps(passport))
+        mutate(tampered)
+        assert not crypto.verify_passport(tampered).valid, "metadata mutation not caught"
 
 
 @requires_crypto

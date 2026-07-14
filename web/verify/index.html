@@ -422,11 +422,21 @@
   }
 
   // ---- passport verification (mirrors crypto.verify_passport) ------------ //
-  function buildHashChain(blocks) {
+  // Must mirror schema._META_KEYS exactly (order irrelevant — canonicalJson sorts).
+  function metaOf(passport) {
+    return {
+      soup_passport_version: passport.soup_passport_version,
+      provenance_class: passport.provenance_class,
+      model: passport.model,
+      unattested_fields: passport.unattested_fields,
+    };
+  }
+  function buildHashChain(blocks, meta) {
     const blockHashes = {};
     for (const name of Object.keys(blocks)) {
       blockHashes[name] = sha256Hex(canonicalJson(blocks[name]));
     }
+    if (meta !== undefined) blockHashes["__meta__"] = sha256Hex(canonicalJson(meta));
     const rootHash = sha256Hex(canonicalJson(blockHashes));
     return { block_hashes: blockHashes, root_hash: rootHash };
   }
@@ -464,16 +474,17 @@
       return result;
     }
 
-    // Recompute the hash chain and compare, naming any altered block.
-    const recomputed = buildHashChain(passport.blocks);
+    // Recompute the hash chain (blocks + metadata) and compare, naming any change.
+    const recomputed = buildHashChain(passport.blocks, metaOf(passport));
     const stored = passport.hash_chain;
     const storedBH = stored.block_hashes || {};
     let chainOk = true;
     const names = new Set([...Object.keys(storedBH), ...Object.keys(recomputed.block_hashes)]);
     for (const name of [...names].sort()) {
-      if (!(name in storedBH)) { reasons.push("block '" + name + "' missing from stored block_hashes"); chainOk = false; }
-      else if (!(name in recomputed.block_hashes)) { reasons.push("unexpected block '" + name + "'"); chainOk = false; }
-      else if (storedBH[name] !== recomputed.block_hashes[name]) { reasons.push("block '" + name + "' was altered (hash mismatch)"); chainOk = false; }
+      const label = name === "__meta__" ? "passport metadata (model / provenance)" : "block '" + name + "'";
+      if (!(name in storedBH)) { reasons.push(label + " missing from stored block_hashes"); chainOk = false; }
+      else if (!(name in recomputed.block_hashes)) { reasons.push("unexpected " + label); chainOk = false; }
+      else if (storedBH[name] !== recomputed.block_hashes[name]) { reasons.push(label + " was altered (hash mismatch)"); chainOk = false; }
     }
     if (stored.root_hash !== recomputed.root_hash) { reasons.push("root_hash mismatch"); chainOk = false; }
 
@@ -645,7 +656,7 @@
   "blocks": {
     "accountability": {
       "run_by": "root@vm",
-      "signed_at": "2026-07-14T16:15:49.184034+00:00",
+      "signed_at": "2026-07-14T16:24:04.592842+00:00",
       "signer": {
         "label": null,
         "public_key": "4uq6THtV02ASZ/57MqxgV8j3kEMqIN3JkNbpmYb6eXM=",
@@ -729,7 +740,8 @@
   },
   "hash_chain": {
     "block_hashes": {
-      "accountability": "sha256:0ca83ae3d4791ce84c9e37be3f220e082c7727ea1def065e297a0867b1ef71bf",
+      "__meta__": "sha256:9546f0436df7f6e27621b641b1b5b5c696406acefce3c987900246cdb141a4d1",
+      "accountability": "sha256:5a42810110e41511540674826f1d836a434315c98dcdccf8830bd99d1e5933e7",
       "data_provenance": "sha256:f5b2a49a92e0158b9309af3e6be59160a90e568fcb7d70c4d9052d087f277d91",
       "evaluation": "sha256:7cc74e58c06d426b7651f0221ebaf42fdb73a43606d6dbe5e23b46e3366b190e",
       "identity": "sha256:28059b4a003c57719ce9d1638d9f507bb2b1fea76e602ea03252241588a36a91",
@@ -737,10 +749,10 @@
       "security": "sha256:765f73f44639bd2790bca70c3f07a80576b8e86efaab32ec9b12f33a5d29ba4c",
       "training_record": "sha256:038a450b219dd73bca3a4032ad0297679d89636b5a2f436bfd4c3c7f77310df8"
     },
-    "root_hash": "sha256:bbcba288c8759367d992aea5e8dce3ad638fd755359717fa647ea32d4440ae22"
+    "root_hash": "sha256:f766d24380fcdfd19971762f817e747c19cded1f4728fbeb95328b5362048ccc"
   },
   "model": {
-    "created_at": "2026-07-14T16:15:49.184054+00:00",
+    "created_at": "2026-07-14T16:24:04.592863+00:00",
     "name": "webdemo",
     "version": "1.0.0"
   },
@@ -748,7 +760,7 @@
   "signature": {
     "algorithm": "ed25519",
     "public_key": "4uq6THtV02ASZ/57MqxgV8j3kEMqIN3JkNbpmYb6eXM=",
-    "value": "5nc+bAdRTX/tDfS9eM30k/HuN9JHJaZANO5yUDYSk+5oczKjXJOcvYUbBEUp5zEIpzWMK6lUFKQJm/DRY14OBg=="
+    "value": "2Q15kxra9DCSaqPo6a6EVCyeIv0UAbDtMmC4zYxwGlBeHeEVRiOVvZE8D63i2xFOJQjm7WcHS3HOSnrcw53NCw=="
   },
   "soup_passport_version": "1.0",
   "unattested_fields": [

@@ -284,11 +284,21 @@
   }
 
   // ---- passport verification (mirrors crypto.verify_passport) ------------ //
-  function buildHashChain(blocks) {
+  // Must mirror schema._META_KEYS exactly (order irrelevant — canonicalJson sorts).
+  function metaOf(passport) {
+    return {
+      soup_passport_version: passport.soup_passport_version,
+      provenance_class: passport.provenance_class,
+      model: passport.model,
+      unattested_fields: passport.unattested_fields,
+    };
+  }
+  function buildHashChain(blocks, meta) {
     const blockHashes = {};
     for (const name of Object.keys(blocks)) {
       blockHashes[name] = sha256Hex(canonicalJson(blocks[name]));
     }
+    if (meta !== undefined) blockHashes["__meta__"] = sha256Hex(canonicalJson(meta));
     const rootHash = sha256Hex(canonicalJson(blockHashes));
     return { block_hashes: blockHashes, root_hash: rootHash };
   }
@@ -326,16 +336,17 @@
       return result;
     }
 
-    // Recompute the hash chain and compare, naming any altered block.
-    const recomputed = buildHashChain(passport.blocks);
+    // Recompute the hash chain (blocks + metadata) and compare, naming any change.
+    const recomputed = buildHashChain(passport.blocks, metaOf(passport));
     const stored = passport.hash_chain;
     const storedBH = stored.block_hashes || {};
     let chainOk = true;
     const names = new Set([...Object.keys(storedBH), ...Object.keys(recomputed.block_hashes)]);
     for (const name of [...names].sort()) {
-      if (!(name in storedBH)) { reasons.push("block '" + name + "' missing from stored block_hashes"); chainOk = false; }
-      else if (!(name in recomputed.block_hashes)) { reasons.push("unexpected block '" + name + "'"); chainOk = false; }
-      else if (storedBH[name] !== recomputed.block_hashes[name]) { reasons.push("block '" + name + "' was altered (hash mismatch)"); chainOk = false; }
+      const label = name === "__meta__" ? "passport metadata (model / provenance)" : "block '" + name + "'";
+      if (!(name in storedBH)) { reasons.push(label + " missing from stored block_hashes"); chainOk = false; }
+      else if (!(name in recomputed.block_hashes)) { reasons.push("unexpected " + label); chainOk = false; }
+      else if (storedBH[name] !== recomputed.block_hashes[name]) { reasons.push(label + " was altered (hash mismatch)"); chainOk = false; }
     }
     if (stored.root_hash !== recomputed.root_hash) { reasons.push("root_hash mismatch"); chainOk = false; }
 

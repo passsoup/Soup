@@ -88,15 +88,33 @@ def empty_blocks() -> dict[str, dict]:
     }
 
 
-def build_hash_chain(blocks: dict[str, Any]) -> dict[str, Any]:
-    """Compute ``{"block_hashes": {...}, "root_hash": ...}`` for ``blocks``.
+# The top-level fields that must ALSO be bound by the signature (otherwise an
+# attacker could rename the model or downgrade its provenance without breaking
+# verification). They are folded into the hash chain as a synthetic ``__meta__``
+# block so the seven real blocks keep their shape.
+_META_KEYS = ("soup_passport_version", "provenance_class", "model", "unattested_fields")
 
-    ``block_hashes[b] = hash_obj(blocks[b])`` and
-    ``root_hash = hash_obj(block_hashes)``. Because ``hash_obj`` canonicalises
-    (sorted keys, no whitespace), flipping any byte in any block changes that
-    block's hash, which changes ``root_hash``, which breaks the signature.
+
+def meta_of(passport: dict[str, Any]) -> dict[str, Any]:
+    """Extract the signed metadata (top-level fields) from a passport."""
+    return {k: passport.get(k) for k in _META_KEYS}
+
+
+def build_hash_chain(
+    blocks: dict[str, Any], meta: Optional[dict[str, Any]] = None
+) -> dict[str, Any]:
+    """Compute ``{"block_hashes": {...}, "root_hash": ...}``.
+
+    ``block_hashes[b] = hash_obj(blocks[b])`` for each block, plus a synthetic
+    ``__meta__`` entry over the passport's top-level metadata (model, version,
+    provenance class, unattested list) when ``meta`` is supplied. Then
+    ``root_hash = hash_obj(block_hashes)``. Because ``hash_obj`` canonicalises,
+    flipping any byte in any block *or* in the metadata changes ``root_hash``,
+    which breaks the signature.
     """
     block_hashes = {name: hash_obj(body) for name, body in blocks.items()}
+    if meta is not None:
+        block_hashes["__meta__"] = hash_obj(meta)
     root_hash = hash_obj(block_hashes)
     return {"block_hashes": block_hashes, "root_hash": root_hash}
 
@@ -130,17 +148,17 @@ def assemble_passport(
         },
         "blocks": blocks,
         "unattested_fields": sorted(set(unattested_fields or [])),
-        "hash_chain": build_hash_chain(blocks),
     }
+    passport["hash_chain"] = build_hash_chain(blocks, meta_of(passport))
     return passport
 
 
 def recompute_hash_chain(passport: dict[str, Any]) -> dict[str, Any]:
-    """Recompute the hash chain from ``passport["blocks"]`` (read side)."""
+    """Recompute the hash chain from the passport's blocks + metadata (read side)."""
     blocks = passport.get("blocks")
     if not isinstance(blocks, dict):
         raise ValueError("passport has no 'blocks' object")
-    return build_hash_chain(blocks)
+    return build_hash_chain(blocks, meta_of(passport))
 
 
 def verify_hash_chain(passport: dict[str, Any]) -> tuple[bool, list[str]]:
@@ -167,7 +185,12 @@ def verify_hash_chain(passport: dict[str, Any]) -> tuple[bool, list[str]]:
         elif name not in recomputed_bh:
             problems.append(f"unexpected block '{name}' in stored block_hashes")
         elif stored_bh[name] != recomputed_bh[name]:
-            problems.append(f"block '{name}' was altered (hash mismatch)")
+            label = (
+                "passport metadata (model / provenance)"
+                if name == "__meta__"
+                else f"block '{name}'"
+            )
+            problems.append(f"{label} was altered (hash mismatch)")
 
     if stored.get("root_hash") != recomputed["root_hash"]:
         problems.append("root_hash mismatch")
