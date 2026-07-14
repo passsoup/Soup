@@ -1,0 +1,26 @@
+# Example: block a release when the model regresses or fails its scan.
+# Copy this into your own repo. It assumes your training job has produced the
+# .soup/ evidence directory (soup passport eval / soup scan / soup gate) as an
+# artifact or in the workspace.
+name: Soup Ship Gate (example)
+
+on:
+  workflow_dispatch:
+  # pull_request:   # enable to gate every PR
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # In a real pipeline, restore the .soup/ evidence produced by your
+      # training/eval job here (download-artifact, or run soup eval/scan).
+      - name: Ship gate
+        uses: ./.github/actions/soup-gate
+        with:
+          min-score: "arithmetic=0.8"
+          no-regressions: "true"
+          require-clean-scan: "true"

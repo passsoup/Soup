@@ -45,35 +45,36 @@ from soup_cli.commands import (  # noqa: E402
     ui,
 )
 
+# Soup Passport — the trust layer: give every model a signed passport.
+from soup_cli.commands import adopt as _adopt_cmd  # noqa: E402
+
 # v0.44.0 — Live monitoring + standalone CLI wrappers.
 from soup_cli.commands import (  # noqa: E402
     delinearize_llama4 as delinearize_llama4_cmd,
 )
 from soup_cli.commands import doctor as doctor_cmd  # noqa: E402
 from soup_cli.commands import fetch as fetch_cmd  # noqa: E402
+from soup_cli.commands import gate as _gate_cmd  # noqa: E402
+from soup_cli.commands import license_cmd as _license_cmd  # noqa: E402
 from soup_cli.commands import llama as llama_cmd  # noqa: E402
 from soup_cli.commands import (  # noqa: E402
     merge_sharded_fsdp_weights as merge_sharded_fsdp_weights_cmd,
 )
 from soup_cli.commands import monitor as monitor_cmd  # noqa: E402
+from soup_cli.commands import pack as _pack_cmd  # noqa: E402
+from soup_cli.commands import passport_cmd as _passport_cmd  # noqa: E402
 from soup_cli.commands import quantize as quantize_cmd  # noqa: E402
 from soup_cli.commands import quickstart as quickstart_cmd  # noqa: E402
+from soup_cli.commands import scan as _scan_cmd  # noqa: E402
+from soup_cli.commands import sign as _sign_cmd  # noqa: E402
 from soup_cli.commands import spectrum as spectrum_cmd  # noqa: E402
 from soup_cli.commands import (  # noqa: E402
     tui as tui_cmd,
 )
+from soup_cli.commands import verify as _verify_cmd  # noqa: E402
 from soup_cli.commands import (  # noqa: E402
     why as why_cmd,
 )
-
-# Soup Passport — the trust layer: give every model a signed passport.
-from soup_cli.commands import gate as _gate_cmd  # noqa: E402
-from soup_cli.commands import license_cmd as _license_cmd  # noqa: E402
-from soup_cli.commands import pack as _pack_cmd  # noqa: E402
-from soup_cli.commands import passport_cmd as _passport_cmd  # noqa: E402
-from soup_cli.commands import scan as _scan_cmd  # noqa: E402
-from soup_cli.commands import sign as _sign_cmd  # noqa: E402
-from soup_cli.commands import verify as _verify_cmd  # noqa: E402
 from soup_cli.utils.constants import GITHUB_URL  # noqa: E402
 
 console = Console()
@@ -303,6 +304,7 @@ app.command(name="scan")(_scan_cmd.scan)
 app.command(name="gate")(_gate_cmd.gate)
 app.command(name="verify")(_verify_cmd.verify)
 app.command(name="sign")(_sign_cmd.sign)
+app.command(name="adopt")(_adopt_cmd.adopt)
 app.add_typer(
     _passport_cmd.app,
     name="passport",

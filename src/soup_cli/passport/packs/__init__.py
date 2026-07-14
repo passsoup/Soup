@@ -9,6 +9,7 @@ from __future__ import annotations
 # Importing each module runs its register(...) call. More packs (bank-mrm, gdpr,
 # eu-ai-act-highrisk, hipaa, nist-ai-rmf) are registered as they are added.
 from soup_cli.passport.packs import (  # noqa: F401
+    bank_mrm,
     eu_ai_act_gpai,
     model_card,
 )

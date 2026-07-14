@@ -1,0 +1,48 @@
+name: "Soup Ship Gate"
+description: >-
+  Run the Soup ship gate against a run's evidence and fail the job on DON'T SHIP.
+  Blocks a release when a model regresses, scores below threshold, or fails its
+  security scan. Exit 4 from `soup gate` fails the step.
+author: "Soup"
+
+inputs:
+  run-dir:
+    description: "Directory holding .soup evidence (train/eval/gate/scan JSON)."
+    required: false
+    default: ".soup"
+  min-score:
+    description: "Space-separated per-task floors, e.g. 'arithmetic=0.8 format=0.9'."
+    required: false
+    default: ""
+  no-regressions:
+    description: "Fail if any task regressed against the baseline."
+    required: false
+    default: "true"
+  require-clean-scan:
+    description: "Fail unless the security scan is clean."
+    required: false
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Soup (light)
+      shell: bash
+      run: pip install --quiet soup-cli || pip install --quiet -e .
+
+    - name: Run ship gate
+      shell: bash
+      run: |
+        set -euo pipefail
+        args=(--run-dir "${{ inputs.run-dir }}")
+        for pair in ${{ inputs.min-score }}; do
+          args+=(--min-score "$pair")
+        done
+        if [ "${{ inputs.no-regressions }}" = "true" ]; then
+          args+=(--no-regressions)
+        fi
+        if [ "${{ inputs.require-clean-scan }}" = "true" ]; then
+          args+=(--require-clean-scan)
+        fi
+        echo "soup gate ${args[*]}"
+        soup gate "${args[@]}"

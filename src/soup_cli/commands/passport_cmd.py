@@ -251,3 +251,136 @@ def show_cmd(
         print(render_markdown(doc))
     else:
         render_terminal(doc, console)
+
+
+# --------------------------------------------------------------------------- #
+# Passport registry (Pro: push/pull/list against a hosted registry;
+# Enterprise: serve a self-hosted registry). Stores ONLY passports (hashes).
+# --------------------------------------------------------------------------- #
+def _require_registry() -> None:
+    from soup_cli.passport import licensing
+
+    try:
+        licensing.require("registry")
+    except licensing.LicenseError as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.LICENSE_REQUIRED)
+
+
+@app.command("push")
+def push_cmd(
+    passport: str = typer.Argument(..., help="Passport JSON to publish."),
+    url: str = typer.Option(..., "--url", help="Registry base URL, e.g. https://reg.acme.com."),
+    token: Optional[str] = typer.Option(None, "--token", help="Bearer token (org key)."),
+) -> None:
+    """Publish a passport to the org registry (Pro). Network is expected here.
+
+    The registry stores only the passport JSON (hashes) — never weights or data.
+    """
+    _require_registry()
+    from soup_cli.passport.io import load_passport
+    from soup_cli.passport.registry import RegistryClient, RegistryError
+
+    try:
+        doc = load_passport(passport)
+    except (OSError, ValueError) as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.BAD_ARGS)
+    try:
+        pid = RegistryClient(url, token=token).push(doc)
+    except RegistryError as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.ERROR)
+    console.print(f"[green]✔ published[/] id={escape(pid)} -> {escape(url)}")
+
+
+@app.command("pull")
+def pull_cmd(
+    passport_id: str = typer.Argument(..., help="Passport id to fetch."),
+    url: str = typer.Option(..., "--url", help="Registry base URL."),
+    token: Optional[str] = typer.Option(None, "--token", help="Bearer token (org key)."),
+    out: str = typer.Option("passport.json", "--out", help="Where to write the fetched passport."),
+) -> None:
+    """Fetch a passport from the org registry (Pro)."""
+    _require_registry()
+    from soup_cli.passport.io import save_passport
+    from soup_cli.passport.registry import RegistryClient, RegistryError
+
+    try:
+        doc = RegistryClient(url, token=token).pull(passport_id)
+    except RegistryError as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.ERROR)
+    if not doc:
+        console.print(f"[red]passport {escape(passport_id)} not found[/]")
+        raise typer.Exit(exit_codes.CHECK_FAILED)
+    written = save_passport(doc, out, canonical=False)
+    console.print(f"[green]✔ pulled[/] {escape(passport_id)} -> {escape(written)}")
+
+
+@app.command("list")
+def list_cmd(
+    url: str = typer.Option(..., "--url", help="Registry base URL."),
+    token: Optional[str] = typer.Option(None, "--token", help="Bearer token (org key)."),
+) -> None:
+    """List passports in the org registry (Pro)."""
+    _require_registry()
+    from soup_cli.passport.registry import RegistryClient, RegistryError
+
+    try:
+        items = RegistryClient(url, token=token).list()
+    except RegistryError as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.ERROR)
+    if not items:
+        console.print("[dim]registry is empty.[/]")
+        return
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("id")
+    table.add_column("model")
+    table.add_column("version")
+    table.add_column("provenance")
+    table.add_column("gate")
+    for it in items:
+        table.add_row(
+            escape(str(it.get("id"))), escape(str(it.get("name"))),
+            escape(str(it.get("version"))), escape(str(it.get("provenance_class"))),
+            escape(str(it.get("gate_verdict"))),
+        )
+    console.print(table)
+
+
+@app.command("serve")
+def serve_cmd(
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind host."),
+    port: int = typer.Option(8721, "--port", help="Bind port."),
+    data_dir: str = typer.Option(".soup-registry", "--data-dir", help="Passport storage dir."),
+    token: Optional[str] = typer.Option(None, "--token", help="Require this bearer token."),
+) -> None:
+    """Run a self-hosted passport registry (Enterprise). Stores only passports.
+
+    Endpoints: POST /passports, GET /passports, GET /passports/{id},
+    GET /verify/{id}. Deploy on your own infrastructure — nothing phones home.
+    """
+    from soup_cli.passport import licensing
+    from soup_cli.passport.registry import PassportStore, make_server
+
+    try:
+        licensing.require("registry")
+    except licensing.LicenseError as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.LICENSE_REQUIRED)
+
+    store = PassportStore(data_dir)
+    server = make_server(host, port, store, token=token)
+    console.print(
+        f"[green]passport registry[/] on http://{escape(host)}:{port}  "
+        f"[dim](data: {escape(data_dir)}, auth: {'token' if token else 'open'})[/]"
+    )
+    console.print("[dim]Ctrl-C to stop. Stores only passports — never weights or data.[/]")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        console.print("\n[yellow]stopped.[/]")
+    finally:
+        server.server_close()
