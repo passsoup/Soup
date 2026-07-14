@@ -65,6 +65,11 @@ from soup_cli.commands import (  # noqa: E402
 from soup_cli.commands import (  # noqa: E402
     why as why_cmd,
 )
+
+# Soup Passport — the trust layer: give every model a signed passport.
+from soup_cli.commands import gate as _gate_cmd  # noqa: E402
+from soup_cli.commands import passport_cmd as _passport_cmd  # noqa: E402
+from soup_cli.commands import scan as _scan_cmd  # noqa: E402
 from soup_cli.utils.constants import GITHUB_URL  # noqa: E402
 
 console = Console()
@@ -288,6 +293,15 @@ app.add_typer(
 from soup_cli.commands import airgap as _airgap_cmd  # noqa: E402
 
 app.command(name="airgap-bundle")(_airgap_cmd.airgap_bundle)
+
+# Soup Passport product — free core: scan / gate / passport (train|eval|build).
+app.command(name="scan")(_scan_cmd.scan)
+app.command(name="gate")(_gate_cmd.gate)
+app.add_typer(
+    _passport_cmd.app,
+    name="passport",
+    help="Model Passport: record training, evaluate, assemble + sign, verify.",
+)
 
 # v0.61.0 — Unlearning & Knowledge Edit: `soup edit set / diff`.
 from soup_cli.commands import edit as _edit_cmd  # noqa: E402
