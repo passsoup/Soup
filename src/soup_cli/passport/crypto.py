@@ -226,6 +226,34 @@ def sign_passport(
     return passport
 
 
+def sign_passport_with_signer(
+    passport: dict[str, Any],
+    signer: Any,
+    *,
+    signer_type: str = "org",
+    signer_label: Optional[str] = None,
+) -> dict[str, Any]:
+    """Sign a passport using a pluggable :class:`~soup_cli.passport.signers.Signer`.
+
+    Same tamper-evident flow as :func:`sign_passport`, but the signature comes
+    from a backend (file / HSM), so the private key can live in an HSM and never
+    touch this process. Used by ``soup sign --org``.
+    """
+    from soup_cli.passport.schema import build_hash_chain
+
+    block_signer = passport.setdefault("blocks", {}).setdefault(
+        "accountability", {}
+    ).setdefault("signer", {})
+    block_signer["type"] = signer_type
+    block_signer["label"] = signer_label
+    block_signer["public_key"] = signer.public_key_b64()
+
+    passport["hash_chain"] = build_hash_chain(passport["blocks"])
+    root_hash = passport["hash_chain"]["root_hash"]
+    passport["signature"] = signer.sign_root_hash(root_hash)
+    return passport
+
+
 @dataclass
 class VerifyResult:
     """Outcome of verifying a passport — the shared shape CLI and web both use."""

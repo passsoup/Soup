@@ -49,3 +49,8 @@ docs/superpowers/
 
 # Local scratch / temp scripts at repo root (e.g. _smoke.py, _scratch.py) — never committed
 /_*.py
+
+# Soup Passport — license issuer private key must NEVER be committed.
+tools/secrets/
+*.license_priv.pem
+license_issuer_priv.pem
