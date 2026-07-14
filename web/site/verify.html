@@ -100,13 +100,16 @@
         <svg viewBox="0 0 200 200" width="20" height="20" aria-hidden="true"><line x1="55" y1="155" x2="145" y2="45" stroke="#fff" stroke-width="30" stroke-linecap="round"/></svg>
       </a>
       <div>
-        <h1>Verify a Model Passport</h1>
+        <h1 data-i18n="v.h1">Verify a Model Passport</h1>
         <div style="font-size:13px"><a href="index.html" style="color:var(--muted)">&larr; passsoup.dev</a></div>
       </div>
     </header>
-    <button class="themebtn" id="theme" title="Toggle theme">◑ theme</button>
+    <div style="display:flex;gap:8px">
+      <button class="themebtn" id="lang" title="Language">РУ</button>
+      <button class="themebtn" id="theme" title="Toggle theme">◑</button>
+    </div>
   </div>
-  <p class="sub">Paste or upload a Soup passport. Verification runs entirely in your
+  <p class="sub" data-i18n="v.sub">Paste or upload a Soup passport. Verification runs entirely in your
     browser — the passport never leaves this device. Same math as <code>soup verify</code>.</p>
 
   <div class="status" id="status">
@@ -119,16 +122,16 @@
   <div class="card">
     <textarea id="input" placeholder='Paste passport JSON here, e.g. { "soup_passport_version": "1.0", ... }'></textarea>
     <div class="row">
-      <button class="primary" id="verify">Verify passport</button>
-      <label class="filelabel" for="file">Upload .json file</label>
+      <button class="primary" id="verify" data-i18n="v.btn">Verify passport</button>
+      <label class="filelabel" for="file" data-i18n="v.upload">Upload .json file</label>
       <input type="file" id="file" accept="application/json,.json">
-      <button id="sample">Load sample</button>
+      <button id="sample" data-i18n="v.sample">Load sample</button>
     </div>
   </div>
 
   <div class="card blocks" id="blocks"></div>
 
-  <p class="disclaimer">
+  <p class="disclaimer" data-i18n="v.disc">
     This page confirms the passport's signature is <strong>mathematically valid</strong>
     (Ed25519 over the hash-chain root) and that its contents are unchanged. It does
     <strong>not</strong> certify that the signing key is trusted, and it is
@@ -775,6 +778,32 @@
   ]
 };
   $('input').value = '';
+})();
+</script>
+
+<script>
+(function(){
+  var T = {
+    "v.h1": {en:"Verify a Model Passport", ru:"Проверка паспорта модели"},
+    "v.sub": {en:"Paste or upload a Soup passport. Verification runs entirely in your browser — the passport never leaves this device. Same math as <code>soup verify</code>.",
+              ru:"Вставь или загрузи паспорт Soup. Проверка идёт целиком в твоём браузере — паспорт не покидает устройство. Та же математика, что и <code>soup verify</code>."},
+    "v.btn": {en:"Verify passport", ru:"Проверить паспорт"},
+    "v.upload": {en:"Upload .json file", ru:"Загрузить .json файл"},
+    "v.sample": {en:"Load sample", ru:"Загрузить пример"},
+    "v.disc": {en:document.querySelector('[data-i18n=\'v.disc\']') ? document.querySelector('[data-i18n=\'v.disc\']').innerHTML : "",
+               ru:"Эта страница подтверждает, что подпись паспорта <strong>математически</strong> верна, а содержимое не изменено. Она <strong>не</strong> удостоверяет доверие к ключу и <strong>не</strong> является заявлением о признании регулятором. Это <strong>audit-ready</strong> доказательство, а не гарантия комплаенса. Проверка выполняется локально в браузере; ничто не загружается и не сохраняется."}
+  };
+  var KEY="soup-lang";
+  function get(){ try{var s=localStorage.getItem(KEY); if(s==="en"||s==="ru")return s;}catch(e){} return (navigator.language||"en").toLowerCase().indexOf("ru")===0?"ru":"en"; }
+  function apply(l){
+    document.documentElement.setAttribute("lang",l);
+    var ns=document.querySelectorAll("[data-i18n]");
+    for(var i=0;i<ns.length;i++){var el=ns[i],k=el.getAttribute("data-i18n");if(T[k]&&T[k][l])el.innerHTML=T[k][l];}
+    var b=document.getElementById("lang"); if(b) b.textContent = l==="ru"?"EN":"РУ";
+  }
+  var cur=get(); apply(cur);
+  var lb=document.getElementById("lang");
+  if(lb) lb.addEventListener("click",function(){cur=cur==="ru"?"en":"ru";try{localStorage.setItem(KEY,cur);}catch(e){}apply(cur);});
 })();
 </script>
 </body>
