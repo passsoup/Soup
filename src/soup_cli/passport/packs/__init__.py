@@ -11,7 +11,11 @@ from __future__ import annotations
 from soup_cli.passport.packs import (  # noqa: F401
     bank_mrm,
     eu_ai_act_gpai,
+    eu_ai_act_highrisk,
+    gdpr,
+    hipaa,
     model_card,
+    nist_ai_rmf,
 )
 from soup_cli.passport.packs.base import (  # noqa: F401
     Pack,

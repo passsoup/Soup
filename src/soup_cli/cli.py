@@ -47,6 +47,7 @@ from soup_cli.commands import (  # noqa: E402
 
 # Soup Passport — the trust layer: give every model a signed passport.
 from soup_cli.commands import adopt as _adopt_cmd  # noqa: E402
+from soup_cli.commands import airgap_build as _airgap_build_cmd  # noqa: E402
 
 # v0.44.0 — Live monitoring + standalone CLI wrappers.
 from soup_cli.commands import (  # noqa: E402
@@ -305,6 +306,11 @@ app.command(name="gate")(_gate_cmd.gate)
 app.command(name="verify")(_verify_cmd.verify)
 app.command(name="sign")(_sign_cmd.sign)
 app.command(name="adopt")(_adopt_cmd.adopt)
+app.add_typer(
+    _airgap_build_cmd.app,
+    name="airgap",
+    help="Build a portable offline bundle for the whole passport pipeline (Enterprise).",
+)
 app.add_typer(
     _passport_cmd.app,
     name="passport",
