@@ -154,3 +154,100 @@ def eval_cmd(
     console.print(table)
     if result.has_regressions:
         console.print("[yellow]regressions detected — gate with --no-regressions to block ship.[/]")
+
+
+@app.command("build")
+def build_cmd(
+    name: str = typer.Option(..., "--name", help="Model name for the passport."),
+    version: str = typer.Option("1.0.0", "--version", help="Model version."),
+    out: str = typer.Option("passport.json", "--out", help="Output passport JSON path."),
+    parent: Optional[str] = typer.Option(
+        None, "--parent", help="Parent passport JSON for lineage/diff."
+    ),
+    pdf: Optional[str] = typer.Option(None, "--pdf", help="Also render a human-readable PDF."),
+    run_dir: str = typer.Option(".soup", "--run-dir", help="Run directory with evidence."),
+    key: Optional[str] = typer.Option(
+        None, "--key", help="Self-sign private key PEM (default: ~/.soup/keys/id_ed25519)."
+    ),
+) -> None:
+    """Assemble a passport from .soup evidence and self-sign it (Native class).
+
+    Missing evidence is honestly recorded as `unattested`. Example:
+
+        soup passport build --name acme-support-llm --version 1.3.0 --out passport.json
+    """
+    from soup_cli.passport import crypto
+    from soup_cli.passport.builder import build_passport
+    from soup_cli.passport.io import load_passport, save_passport
+
+    if not crypto.is_available():
+        console.print(
+            "[red]Signing needs the 'cryptography' package: pip install 'soup-cli[sign]'[/]"
+        )
+        raise typer.Exit(exit_codes.ERROR)
+
+    parent_passport = None
+    if parent:
+        try:
+            parent_passport = load_passport(parent)
+        except (OSError, ValueError) as exc:
+            console.print(f"[red]could not read --parent: {escape(str(exc))}[/]")
+            raise typer.Exit(exit_codes.BAD_ARGS)
+
+    store = RunStore(run_dir)
+    passport = build_passport(
+        store, model_name=name, model_version=version, parent_passport=parent_passport
+    )
+
+    try:
+        priv = crypto.load_private_key_pem(key) if key else crypto.load_or_create_self_key()
+    except (OSError, ValueError) as exc:
+        console.print(f"[red]could not load signing key: {escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.BAD_ARGS)
+
+    crypto.sign_passport(passport, priv, signer_type="self")
+
+    try:
+        written = save_passport(passport, out)
+    except (OSError, ValueError) as exc:
+        console.print(f"[red]could not write passport: {escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.ERROR)
+
+    console.print(f"[green]✔ passport signed[/] -> {escape(written)}")
+    console.print("  provenance: native   signer: self")
+    console.print(f"  root hash: [dim]{escape(passport['hash_chain']['root_hash'])}[/]")
+    if passport["unattested_fields"]:
+        console.print(
+            f"  [yellow]{len(passport['unattested_fields'])} unattested field(s)[/] "
+            "(honest gaps — run more evidence commands to close them)"
+        )
+
+    if pdf:
+        from soup_cli.passport.render import render_pdf
+
+        try:
+            render_pdf(passport, pdf)
+            console.print(f"  pdf: {escape(pdf)}")
+        except (RuntimeError, ValueError) as exc:
+            console.print(f"[yellow]pdf skipped: {escape(str(exc))}[/]")
+
+
+@app.command("show")
+def show_cmd(
+    passport: str = typer.Argument(..., help="Passport JSON to display."),
+    markdown: bool = typer.Option(False, "--md", help="Emit Markdown instead of a terminal view."),
+) -> None:
+    """Pretty-print a passport's seven blocks for a human reader."""
+    from soup_cli.passport.io import load_passport
+    from soup_cli.passport.render import render_markdown, render_terminal
+
+    try:
+        doc = load_passport(passport)
+    except (OSError, ValueError) as exc:
+        console.print(f"[red]{escape(str(exc))}[/]")
+        raise typer.Exit(exit_codes.BAD_ARGS)
+
+    if markdown:
+        print(render_markdown(doc))
+    else:
+        render_terminal(doc, console)
