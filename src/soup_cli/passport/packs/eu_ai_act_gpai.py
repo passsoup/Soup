@@ -106,7 +106,7 @@ def render(passport: dict) -> str:
       "licence obligations above, the evaluation results and their baseline, and "
       "the passport root hash for provenance. The signed passport (`passport.json`) "
       "is the machine-verifiable companion to this document — verify it with "
-      "`soup verify` or at trysoup.dev/verify.")
+      "`soup verify` or at passsoup.dev/verify.")
     a("")
 
     a("## 8. Honest gaps (unattested)")

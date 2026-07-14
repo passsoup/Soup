@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soup — give every model a passport</title>
+<meta name="description" content="Fine-tune, evaluate, scan, and prove your AI model — all on hardware you control. Every run emits a cryptographically signed Model Passport that anyone can verify without touching your weights or data.">
+<style>
+  :root {
+    --ink: #211712; --ink-2: #3a2c24;
+    --paper: #faf6f0; --paper-2: #f3ece2;
+    --card: #ffffff; --border: #e8ddcf;
+    --fg: #241a14; --muted: #7b6a5c; --faint: #a3968a;
+    --brand: #c0512d; --brand-ink: #9c3f20; --brand-soft: #f6e2d7;
+    --valid: #2f8f5b; --valid-soft: #e3f2e9;
+    --invalid: #c73a3a;
+    --gold: #b8863b;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17110d; --paper-2: #1f1712; --card: #221a14; --border: #33271e;
+      --fg: #f0e7dd; --muted: #b0a093; --faint: #7c6d60;
+      --brand: #e0784f; --brand-ink: #e0784f; --brand-soft: #33211a;
+      --valid: #4fbd83; --valid-soft: #16281f; --invalid: #f0736b; --gold: #d0a154;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #211712; --paper: #faf6f0; --paper-2: #f3ece2; --card: #ffffff; --border: #e8ddcf;
+    --fg: #241a14; --muted: #7b6a5c; --faint: #a3968a;
+    --brand: #c0512d; --brand-ink: #9c3f20; --brand-soft: #f6e2d7;
+    --valid: #2f8f5b; --valid-soft: #e3f2e9; --invalid: #c73a3a; --gold: #b8863b;
+  }
+  :root[data-theme="dark"] {
+    --paper: #17110d; --paper-2: #1f1712; --card: #221a14; --border: #33271e;
+    --fg: #f0e7dd; --muted: #b0a093; --faint: #7c6d60;
+    --brand: #e0784f; --brand-ink: #e0784f; --brand-soft: #33211a;
+    --valid: #4fbd83; --valid-soft: #16281f; --invalid: #f0736b; --gold: #d0a154;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--paper); color: var(--fg);
+    font-family: var(--sans); font-size: 17px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .wrap { width: min(1080px, 92vw); margin-inline: auto; }
+  a { color: var(--brand-ink); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; letter-spacing: -0.01em; }
+  .eyebrow { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--brand-ink); }
+  .mono { font-family: var(--mono); }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+
+  /* --- buttons --- */
+  .btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans);
+    font-weight: 600; font-size: 15px; padding: 11px 20px; border-radius: 10px;
+    border: 1px solid transparent; cursor: pointer; transition: transform .08s ease, background .15s ease; }
+  .btn:hover { text-decoration: none; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn-primary:hover { background: var(--brand-ink); }
+  .btn-ghost { background: transparent; color: var(--fg); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--paper-2); }
+  .btn-onink { background: #fff; color: var(--ink); }
+  .btn-onink-ghost { background: transparent; color: #f3e9df; border-color: #4a382d; }
+
+  /* --- header --- */
+  header.nav { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 11px; font-family: var(--serif); font-weight: 600;
+    font-size: 21px; color: var(--fg); }
+  .brand:hover { text-decoration: none; }
+  .glyph { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); position: relative; flex: none; }
+  .glyph::after { content: ""; position: absolute; inset: 0; }
+  .glyph svg { position: absolute; inset: 0; }
+  .nav-links { display: flex; align-items: center; gap: 26px; }
+  .nav-links a { color: var(--muted); font-size: 15px; font-weight: 500; }
+  .nav-links a:hover { color: var(--fg); text-decoration: none; }
+  .nav-cta { display: flex; align-items: center; gap: 10px; }
+  .theme-btn { background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 13px; }
+  @media (max-width: 760px) { .nav-links { display: none; } }
+
+  /* --- hero --- */
+  .hero { background:
+      radial-gradient(120% 80% at 85% -10%, color-mix(in srgb, var(--brand) 22%, var(--ink)) 0%, transparent 55%),
+      var(--ink);
+    color: #f4ece3; padding: 84px 0 96px; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 54px; align-items: center; }
+  .hero h1 { font-size: clamp(38px, 5.4vw, 62px); line-height: 1.02; margin: 16px 0 0; color: #fff; }
+  .hero h1 .accent { color: var(--brand); font-style: italic; }
+  .hero p.lead { font-size: clamp(17px, 2vw, 20px); color: #d8cabd; margin: 22px 0 30px; max-width: 34ch; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-sub { margin-top: 22px; color: #b6a495; font-size: 14px; }
+  .hero-sub code { font-family: var(--mono); background: #2b2019; color: #f0d9c9; padding: 3px 8px;
+    border-radius: 6px; font-size: 13px; }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } .hero { padding: 60px 0 68px; } }
+
+  /* --- passport card visual --- */
+  .passport { background: linear-gradient(160deg, #2a2019, #1b1410); border: 1px solid #3c2c22;
+    border-radius: 18px; padding: 22px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.7);
+    position: relative; color: #ece0d4; }
+  .passport .pp-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .passport .pp-title { font-family: var(--serif); font-size: 15px; letter-spacing: .04em; color: #cbb8a8; }
+  .stamp { border: 2.5px solid var(--valid); color: var(--valid); border-radius: 9px; padding: 5px 12px;
+    font-weight: 800; font-size: 14px; letter-spacing: .06em; transform: rotate(6deg);
+    display: inline-flex; align-items: center; gap: 6px; }
+  .pp-model { font-family: var(--serif); font-size: 26px; color: #fff; margin: 14px 0 2px; }
+  .pp-meta { font-size: 13px; color: #a99686; }
+  .pp-rows { margin-top: 18px; display: grid; gap: 9px; }
+  .pp-row { display: grid; grid-template-columns: 118px 1fr; gap: 10px; font-size: 13px; align-items: baseline; }
+  .pp-row .k { color: #9c8a7b; }
+  .pp-row .v { font-family: var(--mono); font-size: 11.5px; color: #d9c8b8; word-break: break-all; }
+  .pp-row .v.ok { color: var(--valid); font-family: var(--sans); font-weight: 600; }
+  .pp-chain { margin-top: 16px; border-top: 1px dashed #3c2c22; padding-top: 12px;
+    font-family: var(--mono); font-size: 10.5px; color: #7d6d5f; word-break: break-all; }
+
+  /* --- sections --- */
+  section { padding: 72px 0; }
+  section.alt { background: var(--paper-2); }
+  .section-head { max-width: 58ch; margin-bottom: 40px; }
+  .section-head h2 { font-size: clamp(27px, 3.6vw, 38px); margin: 10px 0 12px; }
+  .section-head p { color: var(--muted); font-size: 18px; margin: 0; }
+
+  /* problem cards */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 820px) { .grid-3 { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .card h3 { font-size: 20px; margin: 0 0 8px; }
+  .card p { color: var(--muted); margin: 0; font-size: 15.5px; }
+
+  /* pipeline steps */
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } }
+  .step { background: var(--card); border: 1px solid var(--border); border-radius: 13px; padding: 20px 18px; position: relative; }
+  .step .num { font-family: var(--mono); font-size: 12px; font-weight: 700; color: #fff;
+    background: var(--brand); width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; }
+  .step h3 { font-family: var(--mono); font-size: 15px; margin: 14px 0 6px; letter-spacing: -0.01em; }
+  .step p { color: var(--muted); font-size: 14px; margin: 0; }
+  .step .exit { display: inline-block; margin-top: 10px; font-family: var(--mono); font-size: 11px;
+    color: var(--valid); background: var(--valid-soft); padding: 2px 7px; border-radius: 5px; }
+
+  /* live band */
+  .live { background: var(--ink); color: #efe5db; border-radius: 20px; padding: 44px; display: grid;
+    grid-template-columns: 1.1fr .9fr; gap: 36px; align-items: center; }
+  @media (max-width: 820px) { .live { grid-template-columns: 1fr; padding: 32px; } }
+  .live h2 { color: #fff; font-size: 30px; margin: 8px 0 12px; }
+  .live p { color: #cbbaab; margin: 0 0 22px; }
+  .demo-box { background: #201812; border: 1px solid #3a2b21; border-radius: 12px; padding: 20px;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; color: #d7c7b8; }
+  .demo-box .c { color: #8a7768; }
+  .demo-box .g { color: var(--valid); font-weight: 700; }
+  .demo-box .r { color: var(--invalid); font-weight: 700; }
+
+  /* pricing */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .tiers { grid-template-columns: 1fr; } }
+  .tier { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+  .tier.feature { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand), 0 24px 48px -30px color-mix(in srgb, var(--brand) 60%, transparent); position: relative; }
+  .tier .badge { position: absolute; top: -12px; left: 28px; background: var(--brand); color: #fff;
+    font-size: 12px; font-weight: 700; letter-spacing: .04em; padding: 4px 12px; border-radius: 999px; }
+  .tier h3 { font-size: 22px; margin: 0; }
+  .tier .price { font-family: var(--serif); font-size: 40px; margin: 12px 0 2px; color: var(--fg); }
+  .tier .price span { font-family: var(--sans); font-size: 15px; color: var(--muted); font-weight: 500; }
+  .tier .who { color: var(--muted); font-size: 14px; margin: 0 0 18px; min-height: 40px; }
+  .tier ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; }
+  .tier li { font-size: 14.5px; padding-left: 26px; position: relative; color: var(--fg); }
+  .tier li::before { content: "✓"; position: absolute; left: 0; color: var(--valid); font-weight: 800; }
+  .tier li.off { color: var(--faint); }
+  .tier li.off::before { content: "–"; color: var(--faint); }
+  .tier .btn { width: 100%; justify-content: center; }
+
+  /* packs strip */
+  .packs { display: flex; flex-wrap: wrap; gap: 12px; }
+  .pack { border: 1px solid var(--border); background: var(--card); border-radius: 999px; padding: 9px 18px;
+    font-size: 14px; font-weight: 600; display: inline-flex; gap: 9px; align-items: center; }
+  .pack .tier-dot { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+  .pack .free { background: var(--valid-soft); color: var(--valid); }
+  .pack .pro { background: var(--brand-soft); color: var(--brand-ink); }
+  .pack .ent { background: #efe7d6; color: var(--gold); }
+  @media (prefers-color-scheme: dark) { .pack .ent { background: #2a2313; } }
+
+  /* footer */
+  footer { background: var(--ink); color: #cbbaab; padding: 56px 0 40px; }
+  footer .cols { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 30px; margin-bottom: 34px; }
+  @media (max-width: 720px) { footer .cols { grid-template-columns: 1fr; gap: 22px; } }
+  footer h4 { font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: .12em;
+    color: #8a7768; margin: 0 0 12px; }
+  footer a { color: #d7c7b8; display: block; padding: 3px 0; font-size: 14.5px; }
+  footer a:hover { color: #fff; }
+  footer .disclaimer { border-top: 1px solid #35281f; padding-top: 22px; font-size: 12.5px; color: #8a7768;
+    line-height: 1.7; max-width: 80ch; }
+  .foot-brand { font-family: var(--serif); font-size: 20px; color: #fff; display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main" style="position:absolute;left:-9999px;">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top" aria-label="Soup home">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 200 200"><line x1="55" y1="155" x2="145" y2="45" stroke="#fff" stroke-width="26" stroke-linecap="round"/></svg>
+      </span>
+      Soup
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#passport">The passport</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#packs">Packs</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="theme-btn" id="theme" aria-label="Toggle colour theme">◑</button>
+      <a class="btn btn-primary" href="verify.html">Verify a passport</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<span id="top"></span>
+
+<!-- HERO -->
+<section class="hero" style="padding-top:64px">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow" style="color:var(--brand)">Trust infrastructure for AI models</span>
+      <h1>Give every model<br>a <span class="accent">passport.</span></h1>
+      <p class="lead">Fine-tune, evaluate, scan, and <em>prove</em> — all on hardware you
+        control. Every run emits a cryptographically signed Model Passport that a regulator,
+        auditor, or buyer can verify without ever touching your weights or your data.</p>
+      <div class="hero-cta">
+        <a class="btn btn-onink" href="verify.html">Try the live verifier →</a>
+        <a class="btn btn-onink-ghost" href="#pricing">See pricing</a>
+      </div>
+      <p class="hero-sub">Install the tooling: <code>pip install 'soup-cli[sign]'</code></p>
+    </div>
+
+    <!-- passport visual, built from real product output -->
+    <div class="passport" role="img" aria-label="A signed model passport showing a VALID stamp">
+      <div class="pp-top">
+        <span class="pp-title">SOUP · MODEL PASSPORT</span>
+        <span class="stamp">✔ VALID</span>
+      </div>
+      <div class="pp-model">acme-support-llm</div>
+      <div class="pp-meta">v1.3.0 · provenance: native · signed by Acme Corp</div>
+      <div class="pp-rows">
+        <div class="pp-row"><span class="k">base model</span><span class="v">llama-3-8b · sha256:9f2c…a71b</span></div>
+        <div class="pp-row"><span class="k">eval gate</span><span class="v ok">SHIP</span></div>
+        <div class="pp-row"><span class="k">backdoor scan</span><span class="v ok">clean</span></div>
+        <div class="pp-row"><span class="k">signature</span><span class="v">ed25519 · verified</span></div>
+      </div>
+      <div class="pp-chain">root&nbsp;sha256:738e0b5de1646399a1090c3379ba944f4d108afe612867bef949eba4059d7ce4</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="why">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Why it exists</span>
+      <h2>Training a model got cheap. Proving it didn't.</h2>
+      <p>Showing a bank's risk committee, a hospital's counsel, or an EU regulator that your
+        model is safe, clean, and better is still a months-long manual project. Soup makes
+        that proof a by-product of the work you already do.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Local-first</h3>
+        <p>Nothing leaves your machine until you export. No telemetry, no phone-home — every
+          step works at zero internet, air-gapped by design.</p>
+      </div>
+      <div class="card">
+        <h3>The artifact is the interface</h3>
+        <p>Engineers work in the terminal. Everyone else — compliance, auditors, buyers —
+          just consumes the signed file the tooling produces.</p>
+      </div>
+      <div class="card">
+        <h3>We sell the printer, not the paper</h3>
+        <p>The passport records only hashes and evidence, never your weights or data. Your
+          documents stay with you; the proof travels.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">One command each</span>
+      <h2>From checkpoint to signed proof, in five steps.</h2>
+      <p>Each step writes tamper-evident evidence; the last one folds it all into a single
+        Ed25519-signed passport. Runs offline, no GPU required to try.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="num">1</span><h3>scan</h3><p>Checkpoint integrity + backdoor / tamper scan. Catches poisoned pickles before they load.</p><span class="exit">exit 4 on threat</span></div>
+      <div class="step"><span class="num">2</span><h3>eval</h3><p>Runs your suite and checks for regressions against a baseline. Scores in, deltas out.</p><span class="exit">before → after</span></div>
+      <div class="step"><span class="num">3</span><h3>gate</h3><p>A binary SHIP / DON'T SHIP verdict. Non-zero exit fails your CI pipeline automatically.</p><span class="exit">SHIP / block</span></div>
+      <div class="step"><span class="num">4</span><h3>passport</h3><p>Assembles the seven-block record and self-signs it. Honest gaps marked, never invented.</p><span class="exit">signed JSON</span></div>
+      <div class="step"><span class="num">5</span><h3>verify</h3><p>Anyone re-checks the signature and hash chain. Green if untouched, red on a single byte.</p><span class="exit">✔ VALID</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PASSPORT -->
+<section id="passport">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What's inside</span>
+      <h2>Seven blocks. One signature. Zero secrets.</h2>
+      <p>A single canonical JSON file — hashes and evidence only. Change one byte anywhere and
+        verification turns red and names exactly what moved.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card"><h3>Identity &amp; data</h3><p>Base-model fingerprint and licence, dataset hashes, PII-scan result — provenance without exposing a single row.</p></div>
+      <div class="card"><h3>Training &amp; evaluation</h3><p>Method, hyperparameters, hardware, duration, the full environment, and before/after scores with the ship verdict.</p></div>
+      <div class="card"><h3>Security &amp; accountability</h3><p>Integrity + backdoor findings, who ran it and when, and the Ed25519 signature — personal or your organisation's.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE -->
+<section class="alt">
+  <div class="wrap">
+    <div class="live">
+      <div>
+        <span class="eyebrow" style="color:var(--brand)">See it yourself</span>
+        <h2>Verify a passport in your browser.</h2>
+        <p>The verifier runs entirely client-side — the passport never leaves the device.
+          Load the sample and watch it turn green; it's the exact check <code class="mono" style="color:#f0d9c9">soup&nbsp;verify</code> runs.</p>
+        <a class="btn btn-primary" href="verify.html">Open the verifier →</a>
+      </div>
+      <div class="demo-box" aria-hidden="true">
+        <div><span class="c">$</span> soup verify passport.json</div>
+        <div class="g">✔ VALID — signature correct, content unchanged</div>
+        <div style="color:#a99686">&nbsp;&nbsp;model: acme-support-llm v1.3.0</div>
+        <div style="color:#a99686">&nbsp;&nbsp;signed by: Acme Corp · gate: SHIP</div>
+        <div style="margin-top:10px"><span class="c"># tamper one byte…</span></div>
+        <div class="r">✘ INVALID — block 'evaluation' was altered</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Open-core pricing</span>
+      <h2>Individual capability is free. Organisational proof is the business.</h2>
+      <p>Train, evaluate, scan, self-sign, and verify — free forever, for everyone. Pay only
+        when you need to prove things at organisation scale.</p>
+    </div>
+    <div class="tiers">
+      <div class="tier">
+        <h3>Free</h3>
+        <div class="price">$0 <span>/ forever</span></div>
+        <p class="who">Every individual engineer. Open source, Apache-2.0.</p>
+        <ul>
+          <li>train · eval · gate · scan</li>
+          <li>Self-signed passports</li>
+          <li>Verify — free for the whole world</li>
+          <li>Model-card export</li>
+          <li class="off">Organisation signing</li>
+          <li class="off">Regulator document packs</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://github.com/passsoup/Soup">Get it on GitHub</a>
+      </div>
+      <div class="tier feature">
+        <span class="badge">Most popular</span>
+        <h3>Pro</h3>
+        <div class="price">$99 <span>/ mo per org</span></div>
+        <p class="who">Startups &amp; teams shipping models into regulated buyers.</p>
+        <ul>
+          <li>Everything in Free</li>
+          <li>Organisation signing ("signed by Acme Corp")</li>
+          <li>EU AI Act (GPAI) &amp; GDPR packs</li>
+          <li>Hosted passport registry</li>
+          <li>Model adoption (BYOM) credits</li>
+          <li class="off">Air-gap bundle &amp; self-hosted registry</li>
+        </ul>
+        <a class="btn btn-primary" href="mailto:hello@passsoup.dev?subject=Soup%20Pro">Start with Pro</a>
+      </div>
+      <div class="tier">
+        <h3>Enterprise</h3>
+        <div class="price">Custom</div>
+        <p class="who">Banks, health, and anyone with a Model Risk function.</p>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Bank MRM, HIPAA, Annex IV, NIST/ISO packs</li>
+          <li>Self-hosted registry (your infra)</li>
+          <li>Air-gap bundle + HSM / PKI signing</li>
+          <li>SLA &amp; security review</li>
+        </ul>
+        <a class="btn btn-ghost" href="mailto:hello@passsoup.dev?subject=Soup%20Enterprise">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PACKS -->
+<section id="packs" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">One passport, many documents</span>
+      <h2>A new regulation is a new renderer — never a new product.</h2>
+      <p>The same signed passport maps into whatever a given regulator or buyer expects.
+        Audit-ready evidence, generated from cryptographically verifiable run records.</p>
+    </div>
+    <div class="packs">
+      <span class="pack">Model card <span class="tier-dot free">FREE</span></span>
+      <span class="pack">EU AI Act · GPAI <span class="tier-dot pro">PRO</span></span>
+      <span class="pack">GDPR · DPIA <span class="tier-dot pro">PRO</span></span>
+      <span class="pack">Bank Model Risk (SR 26-2) <span class="tier-dot ent">ENT</span></span>
+      <span class="pack">EU AI Act · Annex IV <span class="tier-dot ent">ENT</span></span>
+      <span class="pack">HIPAA de-identification <span class="tier-dot ent">ENT</span></span>
+      <span class="pack">NIST AI RMF <span class="tier-dot ent">ENT</span></span>
+      <span class="pack">ISO/IEC 42001 <span class="tier-dot ent">ENT</span></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="foot-brand">
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 200 200"><line x1="55" y1="155" x2="145" y2="45" stroke="#fff" stroke-width="26" stroke-linecap="round"/></svg></span>
+          Soup
+        </div>
+        <p style="color:#a99686;font-size:14.5px;max-width:34ch;margin-top:14px">
+          Give every model a passport. Provable trust as a by-product of training.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="#how">How it works</a>
+        <a href="#passport">The passport</a>
+        <a href="#pricing">Pricing</a>
+        <a href="verify.html">Verify a passport</a>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <a href="https://github.com/passsoup/Soup">GitHub</a>
+        <a href="https://pypi.org/project/soup-cli/">Install (PyPI)</a>
+        <a href="mailto:hello@passsoup.dev">Contact</a>
+      </div>
+    </div>
+    <p class="disclaimer">
+      Verification confirms a passport's signature is mathematically valid and its contents
+      unchanged. It does not certify trust in the signing key and is not a statement of
+      regulator recognition. Soup produces <strong>audit-ready</strong> evidence — not a
+      compliance guarantee, and not legal advice. © <span id="yr">2026</span> Soup ·
+      passsoup.dev · Apache-2.0.
+    </p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var btn = document.getElementById("theme");
+    btn.addEventListener("click", function () {
+      var el = document.documentElement;
+      var cur = el.getAttribute("data-theme");
+      var dark = cur ? cur === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+      el.setAttribute("data-theme", dark ? "light" : "dark");
+    });
+    try { document.getElementById("yr").textContent = new Date().getFullYear(); } catch (e) {}
+  })();
+</script>
+</body>
+</html>

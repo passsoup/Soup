@@ -59,7 +59,7 @@ python -c "import json;p=json.load(open('passport.json'));p['blocks']['evaluatio
 soup verify passport.json          # ✘ INVALID — 'block evaluation was altered'
 ```
 
-**The closer:** open `web/verify/index.html` (or **trysoup.dev/verify**) in a
+**The closer:** open `web/verify/index.html` (or **passsoup.dev/verify**) in a
 browser and drop the passport in — the same green/red result, computed **in the
 buyer's browser**, nothing uploaded. "Your auditor verifies your model without
 ever touching your weights or your data. You keep the printer; they get the proof."

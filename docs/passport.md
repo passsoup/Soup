@@ -28,7 +28,7 @@ soup verify passport.json                                     # ✔ VALID / ✘ 
 ```
 
 Then the viral part: send `passport.json` to anyone. They verify it with
-`soup verify`, or by dropping it into **[trysoup.dev/verify](https://trysoup.dev/verify)**
+`soup verify`, or by dropping it into **[passsoup.dev/verify](https://passsoup.dev/verify)**
 (or the local `web/verify/index.html`) — a read-only page that checks the
 signature **in their browser**, so the passport never leaves their machine.
 

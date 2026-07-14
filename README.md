@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://trysoup.dev">Website</a> &middot;
+  <a href="https://passsoup.dev">Website</a> &middot;
   <a href="#quick-start">Quick Start</a> &middot;
   <a href="#configuration">Config</a> &middot;
   <a href="#documentation">Docs</a> &middot;
@@ -24,7 +24,7 @@
   <img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 License">
   <a href="https://github.com/MakazhanAlpamys/Soup/actions"><img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/MakazhanAlpamys/65fdc943f85f3b2c46ecddb415c2b779/raw/soup_tests.json" alt="Tests"></a>
   <a href="https://github.com/MakazhanAlpamys/Soup/actions"><img src="https://github.com/MakazhanAlpamys/Soup/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://trysoup.dev"><img src="https://img.shields.io/badge/website-trysoup.dev-blue" alt="Website"></a>
+  <a href="https://passsoup.dev"><img src="https://img.shields.io/badge/website-passsoup.dev-blue" alt="Website"></a>
 </p>
 
 ---
@@ -114,7 +114,7 @@ soup verify passport.json                                   # ✔ VALID — or �
 
 Everything runs **offline / air-gapped** — no telemetry, no phone-home. Send the
 passport to anyone; they verify it with `soup verify` or in their browser at
-[trysoup.dev/verify](https://trysoup.dev) (`web/verify/index.html`), where the
+[passsoup.dev/verify](https://passsoup.dev) (`web/verify/index.html`), where the
 check runs client-side so the passport never leaves their machine. Regulator/buyer
 document packs (`model-card` free; EU AI Act, GDPR, bank MRM, HIPAA, NIST/ISO
 gated), an offline license system, a passport registry, and a one-shot air-gap
