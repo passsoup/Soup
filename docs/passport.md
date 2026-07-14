@@ -93,7 +93,7 @@ the envelope) rather than inventing a proprietary format.
 
 | Command | Tier | Purpose |
 |---|---|---|
-| `soup sign <passport> --org "Acme Corp"` | Pro | Re-sign with an organisation identity key. |
+| `soup sign <passport> --org "MePlay Corp"` | Pro | Re-sign with an organisation identity key. |
 | `soup pack render --pack <name> ...` | Pro / Ent | Regulator/buyer document packs (below). |
 | `soup adopt <ckpt>` | Paid / model | BYOM: deep-scan + eval an external model → Attested passport. |
 | `soup passport push/pull/list --url ...` | Pro | Passport registry client (hosted). |
@@ -132,7 +132,7 @@ Paid features activate from a **signed license file** — no server, no phone-ho
 so it works in an air-gapped datacenter:
 
 ```bash
-soup license activate acme.license.key    # verified against a baked-in issuer key
+soup license activate meplay.license.key    # verified against a baked-in issuer key
 soup license status                        # tier, expiry, permitted features
 ```
 
@@ -160,9 +160,9 @@ Stores **only passports (hashes)** — never weights or data.
 soup passport serve --host 0.0.0.0 --port 8721 --data-dir ./registry --token <org-key>
 
 # Pro client:
-soup passport push  passport.json --url https://reg.acme.com --token <org-key>
-soup passport list  --url https://reg.acme.com --token <org-key>
-soup passport pull  <id> --url https://reg.acme.com --out fetched.json
+soup passport push  passport.json --url https://reg.meplay.com --token <org-key>
+soup passport list  --url https://reg.meplay.com --token <org-key>
+soup passport pull  <id> --url https://reg.meplay.com --out fetched.json
 ```
 
 Endpoints: `POST /passports`, `GET /passports`, `GET /passports/{id}`,
@@ -174,7 +174,7 @@ publishing; passports are public-verifiable by design.
 ## Air-gap bundle
 
 ```bash
-soup airgap build --out soup-airgap.tar.gz --include-wheels --license acme.license.key
+soup airgap build --out soup-airgap.tar.gz --include-wheels --license meplay.license.key
 ```
 
 Produces a single tarball that runs the whole pipeline on an isolated machine:

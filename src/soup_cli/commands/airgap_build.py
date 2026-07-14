@@ -35,7 +35,7 @@ def build_cmd(
 
     Example:
 
-        soup airgap build --out soup-airgap.tar.gz --include-wheels --license acme.license.key
+        soup airgap build --out soup-airgap.tar.gz --include-wheels --license meplay.license.key
     """
     try:
         licensing.require("airgap")

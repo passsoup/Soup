@@ -91,7 +91,7 @@ def test_hash_chain_detects_single_byte_change():
 def test_sign_and_verify_roundtrip():
     blocks = _sample_blocks()
     passport = schema.assemble_passport(
-        model_name="acme", model_version="1.3.0", created_at="2026-07-14T00:00:00Z",
+        model_name="meplay", model_version="1.3.0", created_at="2026-07-14T00:00:00Z",
         blocks=blocks,
     )
     key = crypto.generate_private_key()
@@ -99,7 +99,7 @@ def test_sign_and_verify_roundtrip():
     result = crypto.verify_passport(passport)
     assert result.valid
     assert result.provenance_class == "native"
-    assert result.model_name == "acme"
+    assert result.model_name == "meplay"
     assert result.gate_verdict == "SHIP"
 
 
@@ -107,7 +107,7 @@ def test_sign_and_verify_roundtrip():
 def test_verify_fails_on_tampered_block():
     blocks = _sample_blocks()
     passport = schema.assemble_passport(
-        model_name="acme", model_version="1.3.0", created_at="2026-07-14T00:00:00Z",
+        model_name="meplay", model_version="1.3.0", created_at="2026-07-14T00:00:00Z",
         blocks=blocks,
     )
     key = crypto.generate_private_key()
@@ -122,7 +122,7 @@ def test_verify_fails_on_tampered_block():
 def test_verify_fails_on_forged_signature():
     blocks = _sample_blocks()
     passport = schema.assemble_passport(
-        model_name="acme", model_version="1.3.0", created_at="2026-07-14T00:00:00Z",
+        model_name="meplay", model_version="1.3.0", created_at="2026-07-14T00:00:00Z",
         blocks=blocks,
     )
     key = crypto.generate_private_key()
@@ -136,14 +136,14 @@ def test_verify_fails_on_forged_signature():
 def test_verify_trusted_key_match():
     blocks = _sample_blocks()
     passport = schema.assemble_passport(
-        model_name="acme", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
+        model_name="meplay", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
         blocks=blocks,
     )
     key = crypto.generate_private_key()
-    crypto.sign_passport(passport, key, signer_type="org", signer_label="Acme Corp")
+    crypto.sign_passport(passport, key, signer_type="org", signer_label="MePlay Corp")
     good = crypto.public_key_b64(key)
     r = crypto.verify_passport(passport, trusted_public_key_b64=good)
-    assert r.valid and r.trusted_key_match and r.signer_label == "Acme Corp"
+    assert r.valid and r.trusted_key_match and r.signer_label == "MePlay Corp"
 
     other = crypto.public_key_b64(crypto.generate_private_key())
     r2 = crypto.verify_passport(passport, trusted_public_key_b64=other)

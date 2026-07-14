@@ -52,9 +52,9 @@ def test_store_put_get_content_addressed(tmp_path):
 @requires_crypto
 def test_store_list_and_verify(tmp_path):
     store = PassportStore(tmp_path / "reg")
-    pid = store.put(_signed_passport(tmp_path, name="acme"))
+    pid = store.put(_signed_passport(tmp_path, name="meplay"))
     items = store.list()
-    assert len(items) == 1 and items[0]["name"] == "acme"
+    assert len(items) == 1 and items[0]["name"] == "meplay"
     result = store.verify(pid)
     assert result["valid"] is True
 
@@ -82,7 +82,7 @@ def test_server_client_roundtrip(tmp_path):
     t.start()
     try:
         client = RegistryClient(f"http://127.0.0.1:{port}", token="tok")
-        p = _signed_passport(tmp_path, name="acme", version="2.0.0")
+        p = _signed_passport(tmp_path, name="meplay", version="2.0.0")
         pid = client.push(p)
         assert pid == passport_id(p)
         assert client.pull(pid)["model"]["version"] == "2.0.0"

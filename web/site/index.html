@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect x='20' y='20' width='160' height='160' rx='28' fill='%23ee6a2e'/%3E%3Cline x1='55' y1='155' x2='145' y2='45' stroke='white' stroke-width='22' stroke-linecap='round'/%3E%3C/svg%3E">
 <title data-i18n="meta.title">Soup — give every model a passport</title>
 <meta name="description" data-i18n-attr="content" data-i18n="meta.desc" content="Fine-tune, evaluate, scan, and prove your AI model — all on hardware you control. Every run emits a cryptographically signed Model Passport that anyone can verify without touching your weights or data.">
 <style>
@@ -254,8 +255,8 @@
         <span class="pp-title">SOUP · MODEL PASSPORT</span>
         <span class="stamp">✔ VALID</span>
       </div>
-      <div class="pp-model">acme-support-llm</div>
-      <div class="pp-meta" data-i18n="pp.meta">v1.3.0 · provenance: native · signed by Acme Corp</div>
+      <div class="pp-model">meplay-support-llm</div>
+      <div class="pp-meta" data-i18n="pp.meta">v1.3.0 · provenance: native · signed by MePlay Corp</div>
       <div class="pp-rows">
         <div class="pp-row"><span class="k" data-i18n="pp.base">base model</span><span class="v">llama-3-8b · sha256:9f2c…a71b</span></div>
         <div class="pp-row"><span class="k" data-i18n="pp.gate">eval gate</span><span class="v ok">SHIP</span></div>
@@ -331,8 +332,8 @@
       <div class="demo-box" aria-hidden="true">
         <div><span class="c">$</span> soup verify passport.json</div>
         <div class="g">✔ VALID — signature correct, content unchanged</div>
-        <div style="color:#a99686">&nbsp;&nbsp;model: acme-support-llm v1.3.0</div>
-        <div style="color:#a99686">&nbsp;&nbsp;signed by: Acme Corp · gate: SHIP</div>
+        <div style="color:#a99686">&nbsp;&nbsp;model: meplay-support-llm v1.3.0</div>
+        <div style="color:#a99686">&nbsp;&nbsp;signed by: MePlay Corp · gate: SHIP</div>
         <div style="margin-top:10px"><span class="c" data-i18n="live.tamper"># tamper one byte…</span></div>
         <div class="r">✘ INVALID — block 'evaluation' was altered</div>
       </div>
@@ -370,7 +371,7 @@
         <p class="who" data-i18n="price.pro.who">Startups &amp; teams shipping models into regulated buyers.</p>
         <ul>
           <li data-i18n="price.pro.1">Everything in Free</li>
-          <li data-i18n="price.pro.2">Organisation signing ("signed by Acme Corp")</li>
+          <li data-i18n="price.pro.2">Organisation signing ("signed by MePlay Corp")</li>
           <li data-i18n="price.pro.3">EU AI Act (GPAI) &amp; GDPR packs</li>
           <li data-i18n="price.pro.4">Hosted passport registry</li>
           <li data-i18n="price.pro.5">Model adoption (BYOM) credits</li>
@@ -512,7 +513,7 @@
       "hero.cta2": { en: "See pricing", ru: "Смотреть цены" },
       "hero.install": { en: "Install the tooling: <code>pip install 'soup-cli[sign]'</code>", ru: "Установка: <code>pip install 'soup-cli[sign]'</code>" },
 
-      "pp.meta": { en: "v1.3.0 · provenance: native · signed by Acme Corp", ru: "v1.3.0 · происхождение: native · подписано Acme Corp" },
+      "pp.meta": { en: "v1.3.0 · provenance: native · signed by MePlay Corp", ru: "v1.3.0 · происхождение: native · подписано MePlay Corp" },
       "pp.base": { en: "base model", ru: "базовая модель" },
       "pp.gate": { en: "eval gate", ru: "гейт качества" },
       "pp.scan": { en: "backdoor scan", ru: "скан закладок" },
@@ -578,7 +579,7 @@
       "price.pro.unit": { en: "/ mo per org", ru: "/ мес за орг." },
       "price.pro.who": { en: "Startups & teams shipping models into regulated buyers.", ru: "Стартапы и команды, которые продают модели в регулируемые компании." },
       "price.pro.1": { en: "Everything in Free", ru: "Всё из Free" },
-      "price.pro.2": { en: "Organisation signing (\"signed by Acme Corp\")", ru: "Подпись организации («подписано Acme Corp»)" },
+      "price.pro.2": { en: "Organisation signing (\"signed by MePlay Corp\")", ru: "Подпись организации («подписано MePlay Corp»)" },
       "price.pro.3": { en: "EU AI Act (GPAI) & GDPR packs", ru: "Пакеты EU AI Act (GPAI) и GDPR" },
       "price.pro.4": { en: "Hosted passport registry", ru: "Облачный реестр паспортов" },
       "price.pro.5": { en: "Model adoption (BYOM) credits", ru: "Кредиты на онбординг внешних моделей (BYOM)" },

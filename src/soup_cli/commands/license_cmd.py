@@ -27,7 +27,7 @@ def activate_cmd(
 
     Example:
 
-        soup license activate acme.license.key
+        soup license activate meplay.license.key
     """
     try:
         lic = licensing.activate(license_file)

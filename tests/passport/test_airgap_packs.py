@@ -24,7 +24,7 @@ def _passport():
     blocks["evaluation"]["gate_verdict"] = "SHIP"
     blocks["security"]["integrity"] = "ok"
     return assemble_passport(
-        model_name="acme", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
+        model_name="meplay", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
         blocks=blocks, unattested_fields=["blocks.data_provenance.pii_scan"],
     )
 
@@ -43,7 +43,7 @@ def test_all_packs_render_and_are_audit_ready(name):
     # Rule §3: no forbidden 'compliant' wording; must say audit-ready.
     assert "compliant" not in md.lower()
     assert "audit-ready" in md.lower()
-    assert "acme" in md.lower()
+    assert "meplay" in md.lower()
 
 
 def test_pack_tiers_match_spec():

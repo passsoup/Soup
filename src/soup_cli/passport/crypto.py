@@ -204,7 +204,7 @@ def sign_passport(
 
     ``signer_type`` is ``"self"`` (personal key) or ``"org"`` (organisation
     identity). ``signer_label`` is the display name a verifier shows
-    ("Acme Corp") — a *claim*, never a trust assertion (spec §2).
+    ("MePlay Corp") — a *claim*, never a trust assertion (spec §2).
 
     The signer identity is written into the accountability block *before* the
     hash chain is (re)computed, so the signer is itself tamper-evident: you

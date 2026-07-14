@@ -32,7 +32,7 @@ def _make_license(monkeypatch, **overrides):
     monkeypatch.setattr(licensing, "_ISSUER_PUBLIC_KEY_B64", pub_b64)
 
     lic = {
-        "org_id": "acme-corp",
+        "org_id": "meplay-corp",
         "tier": "pro",
         "features": ["org-signing", "pack:eu-ai-act-gpai"],
         "adopt_credits": 3,
@@ -55,10 +55,10 @@ def _make_license(monkeypatch, **overrides):
 def test_valid_license_activates(tmp_path, monkeypatch):
     monkeypatch.setattr(licensing.Path, "home", classmethod(lambda cls: tmp_path))
     doc = _make_license(monkeypatch)
-    f = tmp_path / "acme.license.key"
+    f = tmp_path / "meplay.license.key"
     f.write_text(json.dumps(doc))
     lic = licensing.activate(str(f))
-    assert lic.org_id == "acme-corp"
+    assert lic.org_id == "meplay-corp"
     assert lic.covers("org-signing")
     assert lic.covers("pack:eu-ai-act-gpai")
     # pro tier implies pack:gdpr even though not listed
@@ -99,7 +99,7 @@ def test_require_gates_without_license(tmp_path, monkeypatch):
 def test_require_passes_with_license(tmp_path, monkeypatch):
     monkeypatch.setattr(licensing.Path, "home", classmethod(lambda cls: tmp_path))
     doc = _make_license(monkeypatch)
-    f = tmp_path / "acme.license.key"
+    f = tmp_path / "meplay.license.key"
     f.write_text(json.dumps(doc))
     licensing.activate(str(f))
     lic = licensing.require("org-signing")
@@ -112,7 +112,7 @@ def test_require_passes_with_license(tmp_path, monkeypatch):
 def test_adopt_credits_decrement(tmp_path, monkeypatch):
     monkeypatch.setattr(licensing.Path, "home", classmethod(lambda cls: tmp_path))
     doc = _make_license(monkeypatch, adopt_credits=2)
-    f = tmp_path / "acme.license.key"
+    f = tmp_path / "meplay.license.key"
     f.write_text(json.dumps(doc))
     licensing.activate(str(f))
     assert licensing.remaining_adopt_credits() == 2
@@ -137,11 +137,11 @@ def test_file_signer_roundtrip():
         model_name="m", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
         blocks=empty_blocks(),
     )
-    crypto.sign_passport_with_signer(passport, signer, signer_type="org", signer_label="Acme")
+    crypto.sign_passport_with_signer(passport, signer, signer_type="org", signer_label="MePlay")
     result = crypto.verify_passport(passport)
     assert result.valid
     assert result.signer_type == "org"
-    assert result.signer_label == "Acme"
+    assert result.signer_label == "MePlay"
 
 
 def test_pkcs11_signer_is_stub():
@@ -164,7 +164,7 @@ def _sample_passport():
     blocks["evaluation"]["gate_verdict"] = "SHIP"
     blocks["security"]["integrity"] = "ok"
     return assemble_passport(
-        model_name="acme", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
+        model_name="meplay", model_version="1.0.0", created_at="2026-07-14T00:00:00Z",
         blocks=blocks, unattested_fields=["blocks.data_provenance.pii_scan"],
     )
 

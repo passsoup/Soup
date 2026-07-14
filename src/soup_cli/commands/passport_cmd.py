@@ -174,7 +174,7 @@ def build_cmd(
 
     Missing evidence is honestly recorded as `unattested`. Example:
 
-        soup passport build --name acme-support-llm --version 1.3.0 --out passport.json
+        soup passport build --name meplay-support-llm --version 1.3.0 --out passport.json
     """
     from soup_cli.passport import crypto
     from soup_cli.passport.builder import build_passport
@@ -270,7 +270,7 @@ def _require_registry() -> None:
 @app.command("push")
 def push_cmd(
     passport: str = typer.Argument(..., help="Passport JSON to publish."),
-    url: str = typer.Option(..., "--url", help="Registry base URL, e.g. https://reg.acme.com."),
+    url: str = typer.Option(..., "--url", help="Registry base URL, e.g. https://reg.meplay.com."),
     token: Optional[str] = typer.Option(None, "--token", help="Bearer token (org key)."),
 ) -> None:
     """Publish a passport to the org registry (Pro). Network is expected here.

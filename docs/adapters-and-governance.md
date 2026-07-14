@@ -200,7 +200,7 @@ Vanilla ROME / MEMIT degrade after dozens of sequential edits — the model's no
 
 ```bash
 soup edit set --base ./model --method grace \
-              --subject "The CEO of Acme is" --target "Jane Doe"
+              --subject "The CEO of MePlay is" --target "Jane Doe"
 ```
 
 ```yaml

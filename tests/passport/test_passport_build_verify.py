@@ -71,19 +71,19 @@ def test_missing_evidence_marks_unattested(tmp_path):
 @requires_crypto
 def test_build_sign_verify_roundtrip(tmp_path):
     store = _seed_run(tmp_path)
-    passport = build_passport(store, model_name="acme", model_version="1.3.0")
+    passport = build_passport(store, model_name="meplay", model_version="1.3.0")
     key = crypto.generate_private_key()
     crypto.sign_passport(passport, key, signer_type="self")
     result = crypto.verify_passport(passport)
     assert result.valid
     assert result.gate_verdict == "SHIP"
-    assert result.model_name == "acme"
+    assert result.model_name == "meplay"
 
 
 @requires_crypto
 def test_tamper_any_block_breaks_verify(tmp_path):
     store = _seed_run(tmp_path)
-    passport = build_passport(store, model_name="acme", model_version="1.3.0")
+    passport = build_passport(store, model_name="meplay", model_version="1.3.0")
     key = crypto.generate_private_key()
     crypto.sign_passport(passport, key, signer_type="self")
     # Change one score value.
@@ -121,7 +121,7 @@ def test_tampering_top_level_metadata_breaks_verify(tmp_path):
 @requires_crypto
 def test_lineage_parent_diff(tmp_path):
     store = _seed_run(tmp_path)
-    parent = build_passport(store, model_name="acme", model_version="1.0.0")
+    parent = build_passport(store, model_name="meplay", model_version="1.0.0")
     key = crypto.generate_private_key()
     crypto.sign_passport(parent, key, signer_type="self")
 
@@ -131,7 +131,7 @@ def test_lineage_parent_diff(tmp_path):
         {"scores": {"arithmetic": {"after": 0.95, "before": 0.9, "delta": 0.05,
                                    "regression": False}}},
     )
-    child = build_passport(store, model_name="acme", model_version="1.1.0",
+    child = build_passport(store, model_name="meplay", model_version="1.1.0",
                            parent_passport=parent)
     assert child["blocks"]["lineage"]["parent_passport_hash"]
     assert "arithmetic" in child["blocks"]["lineage"]["diff_from_parent"]

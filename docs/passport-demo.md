@@ -37,7 +37,7 @@ printf '{"prediction":"OK"}\n{"prediction":"ready"}\n{"prediction":"4"}\n{"predi
 soup scan --model ckpt
 soup passport eval --suite smoke --predictions preds.jsonl
 soup gate --min-score arithmetic=0.8 --require-clean-scan
-soup passport build --name acme-support-llm --version 1.3.0 --out passport.json
+soup passport build --name meplay-support-llm --version 1.3.0 --out passport.json
 ```
 
 **1. "Here's the passport."** — a beautiful, signed, seven-block record.
@@ -67,10 +67,10 @@ ever touching your weights or your data. You keep the printer; they get the proo
 ### Then, for the enterprise buyer
 
 ```bash
-soup license activate acme.license.key        # offline, air-gapped
+soup license activate meplay.license.key        # offline, air-gapped
 soup pack render --pack eu-ai-act-gpai --passport passport.json --out gpai.md
 soup pack render --pack bank-mrm       --passport passport.json --out mrm.md
-soup sign passport.json --org "Acme Corp"     # verifier now shows "signed by Acme Corp"
+soup sign passport.json --org "MePlay Corp"     # verifier now shows "signed by MePlay Corp"
 soup airgap build --out soup-airgap.tar.gz    # the whole thing, offline, in one file
 ```
 

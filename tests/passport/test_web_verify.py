@@ -93,12 +93,12 @@ def test_web_matches_cli_on_org_signature(tmp_path):
     store = RunStore(tmp_path / ".soup")
     store.write("scan.json", {"status": "clean", "integrity": "ok",
                               "backdoor_scan": {"status": "clean", "findings": []}})
-    passport = build_passport(store, model_name="acme", model_version="2.0.0")
+    passport = build_passport(store, model_name="meplay", model_version="2.0.0")
     signer = FileSigner.generate()
-    crypto.sign_passport_with_signer(passport, signer, signer_type="org", signer_label="Acme Corp")
+    crypto.sign_passport_with_signer(passport, signer, signer_type="org", signer_label="MePlay Corp")
 
     res = _node_verify(passport)
     assert res["valid"] is True
-    assert res["signer_label"] == "Acme Corp"
+    assert res["signer_label"] == "MePlay Corp"
     # CLI agrees.
     assert crypto.verify_passport(passport).valid

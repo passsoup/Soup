@@ -1,7 +1,7 @@
 """Pluggable organisation-signing backends (spec §2, `soup sign --org`).
 
 An organisation signs passports with its *identity* key so a third party sees
-"signed by Acme Corp". Enterprises keep keys in an HSM or existing PKI, so the
+"signed by MePlay Corp". Enterprises keep keys in an HSM or existing PKI, so the
 signing backend is an interface with swappable implementations:
 
 - ``file``    — an ed25519 private-key PEM on disk (default; works everywhere).

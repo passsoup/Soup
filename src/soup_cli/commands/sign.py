@@ -1,6 +1,6 @@
 """soup sign --org — sign a passport with an organisation identity key (Pro).
 
-So a third party verifying the passport sees "signed by Acme Corp" instead of a
+So a third party verifying the passport sees "signed by MePlay Corp" instead of a
 personal key. Gated by a valid license (feature ``org-signing``). Fully offline;
 Enterprise can point ``--hsm`` at a PKCS#11 backend.
 """
@@ -20,7 +20,7 @@ from soup_cli.passport.signers import get_signer
 
 def sign(
     passport: str = typer.Argument(..., help="Passport JSON to (re)sign with the org key."),
-    org: str = typer.Option(..., "--org", help="Organisation label to embed, e.g. 'Acme Corp'."),
+    org: str = typer.Option(..., "--org", help="Organisation label to embed, e.g. 'MePlay Corp'."),
     key: Optional[str] = typer.Option(
         None, "--key", help="Org private-key PEM (file backend). Generated if --generate-key."
     ),
@@ -37,7 +37,7 @@ def sign(
 
     Example:
 
-        soup sign passport.json --org "Acme Corp" --key acme_org.pem
+        soup sign passport.json --org "MePlay Corp" --key meplay_org.pem
     """
     console = Console()
 
