@@ -84,7 +84,17 @@
     border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 13px; font-weight: 600;
     font-family: var(--sans); min-width: 40px; }
   .icon-btn:hover { color: var(--fg); }
-  @media (max-width: 820px) { .nav-links { display: none; } }
+  .hamburger { display: none; }
+  .mobile-menu { display: none; border-bottom: 1px solid var(--border); background: var(--paper); }
+  .mobile-menu.open { display: block; }
+  .mobile-menu a { display: block; padding: 13px 0; color: var(--fg); font-weight: 500;
+    border-top: 1px solid var(--border); }
+  .mobile-menu a:first-child { border-top: none; }
+  .mobile-menu .btn { width: 100%; justify-content: center; margin-top: 12px; }
+  @media (max-width: 820px) {
+    .nav-links { display: none; }
+    .hamburger { display: inline-flex; }
+  }
   @media (max-width: 460px) { .nav-cta .btn-primary { display: none; } }
 
   .hero { background:
@@ -161,11 +171,11 @@
   .tier h3 { font-size: 22px; margin: 0; }
   .tier .price { font-family: var(--serif); font-size: 40px; margin: 12px 0 2px; color: var(--fg); }
   .tier .price span { font-family: var(--sans); font-size: 15px; color: var(--muted); font-weight: 500; }
-  .tier .who { color: var(--muted); font-size: 14px; margin: 0 0 18px; min-height: 40px; }
+  .tier .who { color: var(--muted); font-size: 14px; margin: 0 0 18px; min-height: 56px; }
   .tier ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; }
   .tier li { font-size: 14.5px; padding-left: 26px; position: relative; color: var(--fg); }
   .tier li::before { content: "✓"; position: absolute; left: 0; color: var(--valid); font-weight: 800; }
-  .tier li.off { color: var(--faint); }
+  .tier li.off { color: var(--muted); }
   .tier li.off::before { content: "–"; color: var(--faint); }
   .tier .btn { width: 100%; justify-content: center; }
 
@@ -209,8 +219,16 @@
     <div class="nav-cta">
       <button class="icon-btn" id="lang" aria-label="Switch language">РУ</button>
       <button class="icon-btn" id="theme" aria-label="Toggle colour theme">◑</button>
+      <button class="icon-btn hamburger" id="burger" aria-label="Menu" aria-expanded="false">☰</button>
       <a class="btn btn-primary" href="verify.html" data-i18n="nav.verify">Verify a passport</a>
     </div>
+  </div>
+  <div class="mobile-menu wrap" id="mobileMenu">
+    <a href="#how" data-i18n="nav.how">How it works</a>
+    <a href="#passport" data-i18n="nav.passport">The passport</a>
+    <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+    <a href="#packs" data-i18n="nav.packs">Packs</a>
+    <a class="btn btn-primary" href="verify.html" data-i18n="nav.verify">Verify a passport</a>
   </div>
 </header>
 
@@ -260,7 +278,7 @@
         that proof a by-product of the work you already do.</p>
     </div>
     <div class="grid-3">
-      <div class="card"><h3 data-i18n="why.c1h">Local-first</h3><p data-i18n="why.c1p">Nothing leaves your machine until you export. No telemetry, no phone-home — every step works at zero internet, air-gapped by design.</p></div>
+      <div class="card"><h3 data-i18n="why.c1h">Local-first</h3><p data-i18n="why.c1p">Nothing leaves your machine until you export. No telemetry, no phone-home — every step works at zero internet, air-gapped by design. (The packaged air-gap installer for locked-down deployment is an Enterprise add-on.)</p></div>
       <div class="card"><h3 data-i18n="why.c2h">The artifact is the interface</h3><p data-i18n="why.c2p">Engineers work in the terminal. Everyone else — compliance, auditors, buyers — just consumes the signed file the tooling produces.</p></div>
       <div class="card"><h3 data-i18n="why.c3h">We sell the printer, not the paper</h3><p data-i18n="why.c3p">The passport records only hashes and evidence, never your weights or data. Your documents stay with you; the proof travels.</p></div>
     </div>
@@ -442,19 +460,19 @@
       "meta.title": { en: "Soup — give every model a passport", ru: "Soup — паспорт для каждой модели" },
       "meta.desc": {
         en: "Fine-tune, evaluate, scan, and prove your AI model — all on hardware you control. Every run emits a cryptographically signed Model Passport that anyone can verify without touching your weights or data.",
-        ru: "Файнтюнь, тестируй, сканируй и доказывай — целиком на своём железе. Каждый прогон выдаёт криптографически подписанный Паспорт модели, который любой проверит, не имея доступа к твоим весам и данным."
+        ru: "Файнтюнь, тестируй, сканируй и доказывай — целиком на вашем железе. Каждый прогон выдаёт криптографически подписанный Паспорт модели, который любой проверит, не имея доступа к вашим весам и данным."
       },
       "nav.how": { en: "How it works", ru: "Как работает" },
       "nav.passport": { en: "The passport", ru: "Паспорт" },
       "nav.pricing": { en: "Pricing", ru: "Цены" },
-      "nav.packs": { en: "Packs", ru: "Паки" },
+      "nav.packs": { en: "Packs", ru: "Пакеты" },
       "nav.verify": { en: "Verify a passport", ru: "Проверить паспорт" },
 
       "hero.eyebrow": { en: "Trust infrastructure for AI models", ru: "Инфраструктура доверия для AI-моделей" },
       "hero.h1": { en: "Give every model<br>a <span class=\"accent\">passport.</span>", ru: "Паспорт<br>для каждой <span class=\"accent\">модели.</span>" },
       "hero.lead": {
         en: "Fine-tune, evaluate, scan, and <em>prove</em> — all on hardware you control. Every run emits a cryptographically signed Model Passport that a regulator, auditor, or buyer can verify without ever touching your weights or your data.",
-        ru: "Файнтюнь, тестируй, сканируй и <em>доказывай</em> — целиком на своём железе. Каждый прогон выдаёт криптографически подписанный Паспорт модели, который регулятор, аудитор или покупатель проверит, ни разу не прикоснувшись к твоим весам и данным."
+        ru: "Дообучение, оценка, скан и <em>доказательство</em> — целиком на вашем железе. Каждый прогон выдаёт криптографически подписанный Паспорт модели, который регулятор, аудитор или покупатель проверит, ни разу не прикоснувшись к вашим весам и данным."
       },
       "hero.cta1": { en: "Try the live verifier →", ru: "Открыть проверку →" },
       "hero.cta2": { en: "See pricing", ru: "Смотреть цены" },
@@ -472,21 +490,21 @@
       "why.h2": { en: "Training a model got cheap. Proving it didn't.", ru: "Обучить модель стало дёшево. Доказать — нет." },
       "why.p": {
         en: "Showing a bank's risk committee, a hospital's counsel, or an EU regulator that your model is safe, clean, and better is still a months-long manual project. Soup makes that proof a by-product of the work you already do.",
-        ru: "Показать риск-комитету банка, юристу больницы или регулятору ЕС, что модель безопасна, чиста и лучше — по-прежнему ручной проект на месяцы. Soup делает это доказательство побочным продуктом той работы, что ты и так делаешь."
+        ru: "Показать риск-комитету банка, юристу больницы или регулятору ЕС, что модель безопасна, чиста и лучше — по-прежнему ручной проект на месяцы. Soup делает это доказательство побочным продуктом работы, которую вы и так делаете."
       },
       "why.c1h": { en: "Local-first", ru: "Local-first" },
-      "why.c1p": { en: "Nothing leaves your machine until you export. No telemetry, no phone-home — every step works at zero internet, air-gapped by design.", ru: "Ничто не покидает машину, пока ты явно не экспортируешь. Никакой телеметрии — каждый шаг работает при нулевом интернете, air-gap по рождению." },
+      "why.c1p": { en: "Nothing leaves your machine until you export. No telemetry, no phone-home — every step works at zero internet, air-gapped by design. (The packaged air-gap installer for locked-down deployment is an Enterprise add-on.)", ru: "Ничто не покидает машину, пока ты явно не экспортируешь. Никакой телеметрии — каждый шаг работает при нулевом интернете, air-gap по умолчанию. (Готовый air-gap-инсталлятор для закрытого контура — опция Enterprise.)" },
       "why.c2h": { en: "The artifact is the interface", ru: "Артефакт — это интерфейс" },
       "why.c2p": { en: "Engineers work in the terminal. Everyone else — compliance, auditors, buyers — just consumes the signed file the tooling produces.", ru: "Инженеры работают в терминале. Все остальные — комплаенс, аудиторы, покупатели — просто получают подписанный файл, который выдаёт инструмент." },
       "why.c3h": { en: "We sell the printer, not the paper", ru: "Мы продаём принтер, а не бумагу" },
-      "why.c3p": { en: "The passport records only hashes and evidence, never your weights or data. Your documents stay with you; the proof travels.", ru: "Паспорт хранит только хеши и доказательства — никогда веса и данные. Документы остаются у тебя, путешествует лишь доказательство." },
+      "why.c3p": { en: "The passport records only hashes and evidence, never your weights or data. Your documents stay with you; the proof travels.", ru: "Паспорт хранит только хеши и доказательства — никогда веса и данные. Документы остаются у вас, путешествует лишь доказательство." },
 
       "how.eyebrow": { en: "One command each", ru: "По одной команде на шаг" },
       "how.h2": { en: "From checkpoint to signed proof, in five steps.", ru: "От чекпоинта до подписанного доказательства — за пять шагов." },
       "how.p": { en: "Each step writes tamper-evident evidence; the last one folds it all into a single Ed25519-signed passport. Runs offline, no GPU required to try.", ru: "Каждый шаг пишет защищённое от подделки доказательство; последний собирает всё в один паспорт с подписью Ed25519. Работает офлайн, для пробы GPU не нужен." },
       "how.s1": { en: "Checkpoint integrity + backdoor / tamper scan. Catches poisoned pickles before they load.", ru: "Целостность чекпоинта + скан на закладки/подмену. Ловит отравленные pickle до загрузки." },
       "how.s1e": { en: "exit 4 on threat", ru: "код 4 при угрозе" },
-      "how.s2": { en: "Runs your suite and checks for regressions against a baseline. Scores in, deltas out.", ru: "Прогоняет твой сьют и проверяет регрессии против бейзлайна. На входе — скоры, на выходе — дельты." },
+      "how.s2": { en: "Runs your suite and checks for regressions against a baseline. Scores in, deltas out.", ru: "Прогоняет ваш набор тестов и проверяет регрессии против бейзлайна. На входе — оценки, на выходе — дельты." },
       "how.s2e": { en: "before → after", ru: "до → после" },
       "how.s3": { en: "A binary SHIP / DON'T SHIP verdict. Non-zero exit fails your CI pipeline automatically.", ru: "Бинарный вердикт SHIP / DON'T SHIP. Ненулевой код автоматически валит CI." },
       "how.s3e": { en: "SHIP / block", ru: "SHIP / стоп" },
@@ -496,8 +514,8 @@
 
       "pass.eyebrow": { en: "What's inside", ru: "Что внутри" },
       "pass.h2": { en: "Seven blocks. One signature. Zero secrets.", ru: "Семь блоков. Одна подпись. Ноль секретов." },
-      "pass.p": { en: "A single canonical JSON file — hashes and evidence only. Change one byte anywhere and verification turns red and names exactly what moved.", ru: "Один канонический JSON-файл — только хеши и доказательства. Измени один байт где угодно, и проверка станет красной и назовёт, что именно сдвинулось." },
-      "pass.c1h": { en: "Identity & data", ru: "Идентичность и данные" },
+      "pass.p": { en: "A single canonical JSON file — hashes and evidence only. Change one byte anywhere and verification turns red and names exactly what moved.", ru: "Один канонический JSON-файл — только хеши и доказательства. Измените один байт где угодно, и проверка станет красной и назовёт, что именно сдвинулось." },
+      "pass.c1h": { en: "Identity & data", ru: "Модель и данные" },
       "pass.c1p": { en: "Base-model fingerprint and licence, dataset hashes, PII-scan result — provenance without exposing a single row.", ru: "Фингерпринт и лицензия базовой модели, хеши датасетов, результат PII-скана — происхождение без единой раскрытой строки данных." },
       "pass.c2h": { en: "Training & evaluation", ru: "Тренировка и оценка" },
       "pass.c2p": { en: "Method, hyperparameters, hardware, duration, the full environment, and before/after scores with the ship verdict.", ru: "Метод, гиперпараметры, железо, длительность, полное окружение и скоры до/после с вердиктом гейта." },
@@ -506,13 +524,13 @@
 
       "live.eyebrow": { en: "See it yourself", ru: "Проверь сам" },
       "live.h2": { en: "Verify a passport in your browser.", ru: "Проверь паспорт прямо в браузере." },
-      "live.p": { en: "The verifier runs entirely client-side — the passport never leaves the device. Load the sample and watch it turn green; it's the exact check <code class=\"mono\" style=\"color:#f0d9c9\">soup&nbsp;verify</code> runs.", ru: "Проверка идёт целиком на клиенте — паспорт не покидает устройство. Загрузи пример и смотри, как он станет зелёным; это ровно та же проверка, что делает <code class=\"mono\" style=\"color:#f0d9c9\">soup&nbsp;verify</code>." },
+      "live.p": { en: "The verifier runs entirely client-side — the passport never leaves the device. Load the sample and watch it turn green; it's the exact check <code class=\"mono\" style=\"color:#f0d9c9\">soup&nbsp;verify</code> runs.", ru: "Проверка идёт целиком на клиенте — паспорт не покидает устройство. Загрузите пример и смотрите, как он станет зелёным; это ровно та же проверка, что делает <code class=\"mono\" style=\"color:#f0d9c9\">soup&nbsp;verify</code>." },
       "live.tamper": { en: "# tamper one byte…", ru: "# подделать один байт…" },
       "live.cta": { en: "Open the verifier →", ru: "Открыть проверку →" },
 
       "price.eyebrow": { en: "Open-core pricing", ru: "Цены open-core" },
-      "price.h2": { en: "Individual capability is free. Organisational proof is the business.", ru: "Личная возможность — бесплатна. Организационное доказательство — бизнес." },
-      "price.p": { en: "Train, evaluate, scan, self-sign, and verify — free forever, for everyone. Pay only when you need to prove things at organisation scale.", ru: "Тренировка, оценка, скан, самоподпись и проверка — бесплатно навсегда, для всех. Платишь, только когда нужно доказывать на уровне организации." },
+      "price.h2": { en: "Individual capability is free. Organisational proof is the business.", ru: "Для инженера — бесплатно. Доказательства уровня организации — платно." },
+      "price.p": { en: "Train, evaluate, scan, self-sign, and verify — free forever, for everyone. Pay only when you need to prove things at organisation scale.", ru: "Тренировка, оценка, скан, самоподпись и проверка — бесплатно навсегда, для всех. Платите, только когда нужно доказывать на уровне организации." },
       "price.free.unit": { en: "/ forever", ru: "/ навсегда" },
       "price.free.who": { en: "Every individual engineer. Open source, Apache-2.0.", ru: "Любой инженер. Открытый код, Apache-2.0." },
       "price.free.1": { en: "train · eval · gate · scan", ru: "train · eval · gate · scan" },
@@ -520,29 +538,29 @@
       "price.free.3": { en: "Verify — free for the whole world", ru: "Проверка — бесплатно для всего мира" },
       "price.free.4": { en: "Model-card export", ru: "Экспорт model-card" },
       "price.free.5": { en: "Organisation signing", ru: "Подпись организации" },
-      "price.free.6": { en: "Regulator document packs", ru: "Паки документов под регуляторов" },
+      "price.free.6": { en: "Regulator document packs", ru: "Пакеты документов под регуляторов" },
       "price.free.cta": { en: "Get it on GitHub", ru: "Скачать на GitHub" },
       "price.pro.badge": { en: "Most popular", ru: "Популярный" },
       "price.pro.unit": { en: "/ mo per org", ru: "/ мес за орг." },
       "price.pro.who": { en: "Startups & teams shipping models into regulated buyers.", ru: "Стартапы и команды, которые продают модели в регулируемые компании." },
       "price.pro.1": { en: "Everything in Free", ru: "Всё из Free" },
       "price.pro.2": { en: "Organisation signing (\"signed by Acme Corp\")", ru: "Подпись организации («подписано Acme Corp»)" },
-      "price.pro.3": { en: "EU AI Act (GPAI) & GDPR packs", ru: "Паки EU AI Act (GPAI) и GDPR" },
+      "price.pro.3": { en: "EU AI Act (GPAI) & GDPR packs", ru: "Пакеты EU AI Act (GPAI) и GDPR" },
       "price.pro.4": { en: "Hosted passport registry", ru: "Облачный реестр паспортов" },
-      "price.pro.5": { en: "Model adoption (BYOM) credits", ru: "Кредиты на онбординг моделей (BYOM)" },
-      "price.pro.6": { en: "Air-gap bundle & self-hosted registry", ru: "Air-gap бандл и self-hosted реестр" },
+      "price.pro.5": { en: "Model adoption (BYOM) credits", ru: "Кредиты на онбординг внешних моделей (BYOM)" },
+      "price.pro.6": { en: "Air-gap deployment bundle & self-hosted registry", ru: "Air-gap бандл для развёртывания и self-hosted реестр" },
       "price.pro.cta": { en: "Start with Pro", ru: "Начать с Pro" },
-      "price.ent.price": { en: "Custom", ru: "Индивид." },
+      "price.ent.price": { en: "Custom", ru: "По запросу" },
       "price.ent.who": { en: "Banks, health, and anyone with a Model Risk function.", ru: "Банки, медицина и все, у кого есть функция Model Risk." },
       "price.ent.1": { en: "Everything in Pro", ru: "Всё из Pro" },
-      "price.ent.2": { en: "Bank MRM, HIPAA, Annex IV, NIST/ISO packs", ru: "Паки Bank MRM, HIPAA, Annex IV, NIST/ISO" },
+      "price.ent.2": { en: "Bank MRM, HIPAA, Annex IV, NIST/ISO packs", ru: "Пакеты Bank MRM, HIPAA, Annex IV, NIST/ISO" },
       "price.ent.3": { en: "Self-hosted registry (your infra)", ru: "Self-hosted реестр (на вашей инфраструктуре)" },
-      "price.ent.4": { en: "Air-gap bundle + HSM / PKI signing", ru: "Air-gap бандл + подпись через HSM / PKI" },
+      "price.ent.4": { en: "Air-gap deployment bundle + HSM / PKI signing", ru: "Air-gap бандл для развёртывания + подпись через HSM / PKI" },
       "price.ent.5": { en: "SLA & security review", ru: "SLA и security review" },
       "price.ent.cta": { en: "Talk to us", ru: "Связаться" },
 
       "packs.eyebrow": { en: "One passport, many documents", ru: "Один паспорт — много документов" },
-      "packs.h2": { en: "A new regulation is a new renderer — never a new product.", ru: "Новая регуляция — это новый рендерер, а не новый продукт." },
+      "packs.h2": { en: "A new regulation is a new renderer — never a new product.", ru: "Новое требование регулятора — это новый рендерер, а не новый продукт." },
       "packs.p": { en: "The same signed passport maps into whatever a given regulator or buyer expects. Audit-ready evidence, generated from cryptographically verifiable run records.", ru: "Один и тот же подписанный паспорт раскладывается в то, что ждёт конкретный регулятор или покупатель. Audit-ready доказательства из криптографически проверяемых записей прогона." },
       "packs.modelcard": { en: "Model card <span class=\"tier-dot free\">FREE</span>", ru: "Model card <span class=\"tier-dot free\">FREE</span>" },
       "packs.mrm": { en: "Bank Model Risk (SR 26-2) <span class=\"tier-dot ent\">ENT</span>", ru: "Банковский Model Risk (SR 26-2) <span class=\"tier-dot ent\">ENT</span>" },
@@ -587,11 +605,34 @@
       try { localStorage.setItem(STORE_KEY, cur); } catch (e) {}
       apply(cur);
     });
+    // Theme: persist + share across pages via localStorage.
+    var THEME_KEY = "soup-theme";
+    try {
+      var savedTheme = localStorage.getItem(THEME_KEY);
+      if (savedTheme === "dark" || savedTheme === "light")
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    } catch (e) {}
     document.getElementById("theme").addEventListener("click", function () {
       var el = document.documentElement, c = el.getAttribute("data-theme");
       var dark = c ? c === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-      el.setAttribute("data-theme", dark ? "light" : "dark");
+      var next = dark ? "light" : "dark";
+      el.setAttribute("data-theme", next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
     });
+
+    // Mobile menu.
+    var burger = document.getElementById("burger"), menu = document.getElementById("mobileMenu");
+    if (burger && menu) {
+      burger.addEventListener("click", function () {
+        var open = menu.classList.toggle("open");
+        burger.setAttribute("aria-expanded", open ? "true" : "false");
+        burger.textContent = open ? "✕" : "☰";
+      });
+      var links = menu.querySelectorAll("a");
+      for (var m = 0; m < links.length; m++) links[m].addEventListener("click", function () {
+        menu.classList.remove("open"); burger.setAttribute("aria-expanded", "false"); burger.textContent = "☰";
+      });
+    }
   })();
 </script>
 </body>
