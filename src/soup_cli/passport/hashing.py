@@ -33,11 +33,53 @@ _SHA256_PREFIX = "sha256:"
 def canonical_json(obj: Any) -> str:
     """Serialise ``obj`` to the one canonical JSON string used everywhere.
 
-    Sorted keys, no insignificant whitespace, UTF-8 (``ensure_ascii=False`` so
-    non-ASCII text hashes identically to how a human sees it). This exact call
-    is mirrored byte-for-byte by the ``/verify`` browser implementation.
+    Sorted keys, no insignificant whitespace, UTF-8. Crucially, **numbers are
+    formatted the way JavaScript's ``Number.prototype.toString`` formats them**
+    so the ``/verify`` browser code (file ``web/verify/index.html``) produces
+    byte-identical output and hashes to the same value. The one place stdlib
+    ``json.dumps`` and JS disagree is integer-valued floats: Python emits
+    ``1.0`` where JS emits ``1``. We normalise floats to the JS form so a
+    perfect eval score (``1.0``) verifies green in the browser.
+
+    Do not "simplify" this back to ``json.dumps`` — that reintroduces the
+    divergence and would flag valid passports as tampered on the web page.
     """
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return _encode(obj)
+
+
+def _encode_number(value: Any) -> str:
+    """Format a number to match JS ``Number.toString()`` (JS-canonical)."""
+    if isinstance(value, bool):  # bool is an int subclass — handle first
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    # float
+    if value != value or value in (float("inf"), float("-inf")):
+        raise ValueError("NaN/Infinity are not allowed in a canonical passport")
+    if value == int(value):
+        return str(int(value))  # 1.0 -> "1", matching JS
+    return repr(value)  # shortest round-trip repr; JS agrees for our value range
+
+
+def _encode(obj: Any) -> str:
+    if obj is None:
+        return "null"
+    if isinstance(obj, bool):
+        return "true" if obj else "false"
+    if isinstance(obj, (int, float)):
+        return _encode_number(obj)
+    if isinstance(obj, str):
+        return json.dumps(obj, ensure_ascii=False)  # correct JSON string escaping
+    if isinstance(obj, (list, tuple)):
+        return "[" + ",".join(_encode(x) for x in obj) + "]"
+    if isinstance(obj, dict):
+        parts = []
+        for key in sorted(obj):
+            if not isinstance(key, str):
+                key = str(key)
+            parts.append(json.dumps(key, ensure_ascii=False) + ":" + _encode(obj[key]))
+        return "{" + ",".join(parts) + "}"
+    raise TypeError(f"cannot canonicalise value of type {type(obj).__name__}")
 
 
 def canonical_bytes(obj: Any) -> bytes:

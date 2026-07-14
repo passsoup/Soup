@@ -94,6 +94,32 @@ training:
 
 Full history: [CHANGELOG.md](CHANGELOG.md) &middot; [GitHub Releases](https://github.com/MakazhanAlpamys/Soup/releases).
 
+## Model Passport — prove your model, not just train it
+
+Training a custom model got cheap. *Proving* it is safe, clean, and better — to a
+bank's risk committee, a hospital's lawyer, an EU regulator, a procurement
+questionnaire — is still a months-long manual project. **Soup makes that proof a
+by-product of the work.** Every run can emit a cryptographically signed **Model
+Passport** that anyone can verify **without touching your weights or data**.
+
+```bash
+pip install 'soup-cli[sign]'
+
+soup scan  --model ./output                                 # integrity + backdoor scan
+soup passport eval --model ./output --suite smoke           # eval + regression check
+soup gate  --require-clean-scan --no-regressions            # SHIP / DON'T SHIP (exit 4 fails CI)
+soup passport build --name my-llm --version 1.0.0           # assemble + self-sign (Ed25519)
+soup verify passport.json                                   # ✔ VALID — or ✘ INVALID on a tampered byte
+```
+
+Everything runs **offline / air-gapped** — no telemetry, no phone-home. Send the
+passport to anyone; they verify it with `soup verify` or in their browser at
+[trysoup.dev/verify](https://trysoup.dev) (`web/verify/index.html`), where the
+check runs client-side so the passport never leaves their machine. Regulator/buyer
+document packs (`model-card` free; EU AI Act, GDPR, bank MRM, HIPAA, NIST/ISO
+gated), an offline license system, a passport registry, and a one-shot air-gap
+bundle round it out. Full guide: **[docs/passport.md](docs/passport.md)**.
+
 ## Quick Start
 
 ### 1. Install
@@ -174,6 +200,7 @@ The full feature reference lives in [`docs/`](docs/). Start here:
 | [Serving & export](docs/serving-and-export.md) | OpenAI-compatible server, batch inference, benchmarking, merge/export, Anthropic Messages endpoint, speculative decoding (train + measure your own draft), deploy autopilot, Web UI, Agent Forge |
 | [Adapters, registry & governance](docs/adapters-and-governance.md) | Adapter lifecycle/management, model registry, Soup Cans, the data flywheel (`soup loop`), knowledge editing, steering, supply-chain controls (scan/sign/BOM/attest/audit/airgap) |
 | [Backends, platform & ops](docs/backends-and-ops.md) | MLX/Unsloth backends, alternative hubs, HF Hub integration, autopilot, experiment tracking, plan/apply, env lockfiles, hardware-fit, completions, plugins, utility commands |
+| [**Model Passport**](docs/passport.md) | Signed model passports, scan/eval/gate, verify, offline licensing, org signing, regulator packs (EU AI Act / GDPR / bank MRM / HIPAA / NIST), passport registry, air-gap bundle, `/verify` |
 | [Command reference](docs/commands.md) | The full `soup` command list |
 | [Supported models & extras](docs/models.md) | Recommended model families, the VRAM size guide, the pip extras matrix |
 
