@@ -56,6 +56,22 @@
   .mono { font-family: var(--mono); }
   :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
 
+  /* Subtle, tasteful motion — respects reduced-motion. */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s cubic-bezier(.2,.6,.2,1), transform .7s cubic-bezier(.2,.6,.2,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  .card, .step, .tier, .pack { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+  .card:hover, .step:hover { transform: translateY(-4px); box-shadow: 0 20px 44px -30px rgba(20,10,4,.45); }
+  .pack:hover { transform: translateY(-2px); border-color: var(--brand); }
+  .tier:hover { transform: translateY(-3px); }
+  .btn, .icon-btn { transition: transform .12s ease, background .18s ease, color .18s ease, border-color .18s ease; }
+  .stamp { animation: stampIn .55s cubic-bezier(.2,.9,.3,1.25) both; }
+  @keyframes stampIn { from { opacity: 0; transform: rotate(-16deg) scale(1.5); } to { opacity: 1; transform: rotate(6deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; transition: none; }
+    .stamp { animation: none; }
+    .card:hover, .step:hover, .tier:hover, .pack:hover { transform: none; }
+  }
+
   .btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans);
     font-weight: 600; font-size: 15px; padding: 11px 20px; border-radius: 10px;
     border: 1px solid transparent; cursor: pointer; transition: transform .08s ease, background .15s ease; }
@@ -188,6 +204,27 @@
   .pack .ent { background: #efe7d6; color: var(--gold); }
   @media (prefers-color-scheme: dark) { .pack .ent { background: #2a2313; } }
 
+  .ref-wrap { display: grid; grid-template-columns: 1.25fr .75fr; gap: 44px; align-items: center; }
+  @media (max-width: 860px) { .ref-wrap { grid-template-columns: 1fr; gap: 32px; } }
+  #referral h2 { font-size: clamp(27px, 3.6vw, 38px); margin: 10px 0 12px; }
+  #referral > .wrap > .ref-wrap p { color: var(--muted); font-size: 18px; margin: 0 0 24px; max-width: 46ch; }
+  .ref-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .ref-label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px;
+    letter-spacing: .02em; }
+  .ref-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .ref-row input { flex: 1; min-width: 200px; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: 10px; background: var(--paper); color: var(--fg); font: inherit; font-size: 15px; }
+  .ref-out { margin-top: 16px; }
+  .ref-linkrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .ref-linkrow code { flex: 1; min-width: 220px; font-family: var(--mono); font-size: 13px; background: var(--paper);
+    border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; word-break: break-all; color: var(--brand-ink); }
+  .ref-note { color: var(--faint) !important; font-size: 13px !important; margin-top: 12px !important; }
+  .ref-steps { display: grid; gap: 12px; }
+  .ref-step { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; font-size: 15px; }
+  .ref-step .num { flex: none; font-family: var(--mono); font-size: 13px; font-weight: 700; color: #fff;
+    background: var(--brand); width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
+
   footer { background: var(--ink); color: #cbbaab; padding: 56px 0 40px; }
   footer .cols { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 30px; margin-bottom: 34px; }
   @media (max-width: 720px) { footer .cols { grid-template-columns: 1fr; gap: 22px; } }
@@ -214,7 +251,7 @@
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#passport" data-i18n="nav.passport">The passport</a>
       <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
-      <a href="#packs" data-i18n="nav.packs">Packs</a>
+      <a href="#referral" data-i18n="nav.referral">Referrals</a>
     </nav>
     <div class="nav-cta">
       <button class="icon-btn" id="lang" aria-label="Switch language">РУ</button>
@@ -227,7 +264,7 @@
     <a href="#how" data-i18n="nav.how">How it works</a>
     <a href="#passport" data-i18n="nav.passport">The passport</a>
     <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
-    <a href="#packs" data-i18n="nav.packs">Packs</a>
+    <a href="#referral" data-i18n="nav.referral">Referrals</a>
     <a class="btn btn-primary" href="verify.html" data-i18n="nav.verify">Verify a passport</a>
   </div>
 </header>
@@ -377,7 +414,7 @@
           <li data-i18n="price.pro.5">Model adoption (BYOM) credits</li>
           <li class="off" data-i18n="price.pro.6">Air-gap bundle &amp; self-hosted registry</li>
         </ul>
-        <a class="btn btn-primary" href="mailto:rafik@passsoup.dev?subject=Soup%20Pro" data-i18n="price.pro.cta">Start with Pro</a>
+        <a class="btn btn-primary" id="proBtn" href="https://buy.stripe.com/test_00w4gy55o3phb7XbOce7m00" data-i18n="price.pro.cta">Start with Pro</a>
       </div>
       <div class="tier">
         <h3>Enterprise</h3>
@@ -413,6 +450,40 @@
       <span class="pack" data-i18n="packs.hipaa">HIPAA de-identification <span class="tier-dot ent">ENT</span></span>
       <span class="pack">NIST AI RMF <span class="tier-dot ent">ENT</span></span>
       <span class="pack">ISO/IEC 42001 <span class="tier-dot ent">ENT</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- REFERRAL -->
+<section id="referral">
+  <div class="wrap">
+    <div class="ref-wrap">
+      <div>
+        <span class="eyebrow" data-i18n="ref.eyebrow">Partner programme</span>
+        <h2 data-i18n="ref.h2">Bring a client, earn <span class="accent" style="color:var(--brand)">51%</span>.</h2>
+        <p data-i18n="ref.p">Law firms and engineers: refer the companies you already work with. You get
+          51% of every payment they make, for the life of the subscription.</p>
+        <div class="ref-box">
+          <label class="ref-label" for="refEmail" data-i18n="ref.label">Your email</label>
+          <div class="ref-row">
+            <input id="refEmail" type="email" placeholder="you@example.com" autocomplete="email">
+            <button class="btn btn-primary" id="refGen" data-i18n="ref.gen">Create my link</button>
+          </div>
+          <div class="ref-out" id="refOut" hidden>
+            <div class="ref-linkrow">
+              <code id="refLink"></code>
+              <button class="btn btn-ghost" id="refCopy" data-i18n="ref.copy">Copy</button>
+            </div>
+            <p class="ref-note" data-i18n="ref.note">Share this link. When someone buys through it, the sale is tagged to you in Stripe. Live payout dashboard is coming with our billing backend.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ref-steps">
+        <div class="ref-step"><span class="num">1</span><span data-i18n="ref.s1">Create your link above.</span></div>
+        <div class="ref-step"><span class="num">2</span><span data-i18n="ref.s2">Send it to a company you work with.</span></div>
+        <div class="ref-step"><span class="num">3</span><span data-i18n="ref.s3">They subscribe — the sale is tagged to you.</span></div>
+        <div class="ref-step"><span class="num">4</span><span data-i18n="ref.s4">You get paid 51%, after the refund window closes.</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -566,6 +637,20 @@
       "packs.mrm": { en: "Bank Model Risk (SR 26-2) <span class=\"tier-dot ent\">ENT</span>", ru: "Банковский Model Risk (SR 26-2) <span class=\"tier-dot ent\">ENT</span>" },
       "packs.hipaa": { en: "HIPAA de-identification <span class=\"tier-dot ent\">ENT</span>", ru: "HIPAA деидентификация <span class=\"tier-dot ent\">ENT</span>" },
 
+      "nav.referral": { en: "Referrals", ru: "Рефералам" },
+      "ref.eyebrow": { en: "Partner programme", ru: "Партнёрская программа" },
+      "ref.h2": { en: "Bring a client, earn <span class=\"accent\" style=\"color:var(--brand)\">51%</span>.", ru: "Приведи клиента — получи <span class=\"accent\" style=\"color:var(--brand)\">51%</span>." },
+      "ref.p": { en: "Law firms and engineers: refer the companies you already work with. You get 51% of every payment they make, for the life of the subscription.", ru: "Юрфирмы и инженеры: приводите компании, с которыми уже работаете. Вы получаете 51% с каждого их платежа — на весь срок подписки." },
+      "ref.label": { en: "Your email", ru: "Ваш email" },
+      "ref.gen": { en: "Create my link", ru: "Создать ссылку" },
+      "ref.copy": { en: "Copy", ru: "Копировать" },
+      "ref.copied": { en: "Copied ✓", ru: "Скопировано ✓" },
+      "ref.note": { en: "Share this link. When someone buys through it, the sale is tagged to you in Stripe. A live payout dashboard is coming with our billing backend.", ru: "Поделитесь ссылкой. Когда по ней покупают, продажа привязывается к вам в Stripe. Личный кабинет с выплатами появится вместе с биллинг-бэкендом." },
+      "ref.bademail": { en: "Enter a valid email first.", ru: "Сначала введите корректный email." },
+      "ref.s1": { en: "Create your link above.", ru: "Создайте ссылку выше." },
+      "ref.s2": { en: "Send it to a company you work with.", ru: "Отправьте её компании, с которой работаете." },
+      "ref.s3": { en: "They subscribe — the sale is tagged to you.", ru: "Они оформляют подписку — продажа привязана к вам." },
+      "ref.s4": { en: "You get paid 51%, after the refund window closes.", ru: "Вы получаете 51% — после закрытия окна возврата." },
       "foot.tagline": { en: "Give every model a passport. Provable trust as a by-product of training.", ru: "Паспорт для каждой модели. Доказуемое доверие как побочный продукт обучения." },
       "foot.product": { en: "Product", ru: "Продукт" },
       "foot.resources": { en: "Resources", ru: "Ресурсы" },
@@ -631,6 +716,56 @@
       var links = menu.querySelectorAll("a");
       for (var m = 0; m < links.length; m++) links[m].addEventListener("click", function () {
         menu.classList.remove("open"); burger.setAttribute("aria-expanded", "false"); burger.textContent = "☰";
+      });
+    }
+
+    function t(k) { return (I18N[k] && (I18N[k][cur] || I18N[k].en)) || ""; }
+
+    // --- Scroll-reveal (tasteful, reduced-motion aware) ---
+    var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var targets = document.querySelectorAll(
+      ".section-head, .card, .step, .tier, .pack, .passport, .ref-box, .ref-step, .live, .demo-box"
+    );
+    if (!reduce && "IntersectionObserver" in window) {
+      for (var r = 0; r < targets.length; r++) targets[r].classList.add("reveal");
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      for (var r2 = 0; r2 < targets.length; r2++) io.observe(targets[r2]);
+    }
+
+    // --- Referral: capture ?ref, tag the Stripe checkout with it ---
+    var STRIPE_PRO = "https://buy.stripe.com/test_00w4gy55o3phb7XbOce7m00";
+    var REF_KEY = "soup-ref";
+    try {
+      var qref = new URLSearchParams(location.search).get("ref");
+      if (qref) localStorage.setItem(REF_KEY, qref);
+    } catch (e) {}
+    var proBtn = document.getElementById("proBtn");
+    if (proBtn) {
+      var ref = null;
+      try { ref = localStorage.getItem(REF_KEY); } catch (e) {}
+      proBtn.href = ref
+        ? STRIPE_PRO + "?client_reference_id=" + encodeURIComponent(ref)
+        : STRIPE_PRO;
+    }
+
+    // --- Referral link generator ---
+    var refGen = document.getElementById("refGen");
+    if (refGen) {
+      refGen.addEventListener("click", function () {
+        var email = (document.getElementById("refEmail").value || "").trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert(t("ref.bademail")); return; }
+        var link = "https://passsoup.dev/?ref=" + encodeURIComponent(email);
+        document.getElementById("refLink").textContent = link;
+        document.getElementById("refOut").hidden = false;
+      });
+      var refCopy = document.getElementById("refCopy");
+      refCopy.addEventListener("click", function () {
+        var link = document.getElementById("refLink").textContent;
+        var done = function () { refCopy.textContent = t("ref.copied"); setTimeout(function () { refCopy.textContent = t("ref.copy"); }, 1500); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, done);
+        else done();
       });
     }
   })();
